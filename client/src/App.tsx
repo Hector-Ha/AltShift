@@ -1,10 +1,10 @@
 import React from "react";
-import { CustomEditor } from "./editor/editor.tsx";
+import { CollaborativeEditor } from "./editor/collaborativeEditor.tsx";
 
 const App: React.FC = () => {
   return (
     <>
-      <CustomEditor />
+      <CollaborativeEditor />
     </>
   );
 };

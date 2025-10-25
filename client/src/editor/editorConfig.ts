@@ -1,6 +1,7 @@
 import type { BaseEditor } from "slate";
 import type { ReactEditor } from "slate-react";
 import type { Descendant } from "slate";
+import type { Socket } from "socket.io-client";
 
 // Custom Slate Module
 declare module "slate" {
@@ -16,6 +17,7 @@ declare module "slate" {
   }
 
   interface CustomTypes {
+    socket: Socket;
     Editor: BaseEditor & ReactEditor;
     Element: CustomElement;
     Text: CustomText;
@@ -26,6 +28,6 @@ declare module "slate" {
 export const initialValue: Descendant[] = [
   {
     type: "paragraph",
-    children: [{ text: "A line of text in a paragraph." }],
+    children: [{ text: "" }],
   },
 ];
