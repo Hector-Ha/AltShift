@@ -5,16 +5,20 @@ import { Slate, Editable, withReact } from "slate-react";
 import { initialValue } from "./editorConfig";
 import type { Socket } from "socket.io-client";
 
-interface CustomEditorInterFace {
+interface ICustomEditor {
   socket: Socket;
 }
 
-export const CustomEditor: React.FC<CustomEditorInterFace> = ({ socket }) => {
+export const CustomEditor: React.FC<ICustomEditor> = ({ socket }) => {
   const [editor] = useState<Editor>(() => withReact(createEditor()));
   const [editorValue, setEditorValue] = useState(initialValue);
 
   useEffect(() => {
     socket.on("connect", () => {});
+
+    socket.on("room-joined", (room) => {
+      console.log(`You have join room ${room.data}`);
+    });
 
     return () => {
       socket.off("connect");
