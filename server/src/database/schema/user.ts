@@ -1,5 +1,4 @@
-import { randomUUID } from "crypto";
-import mongoose, { Document, Schema, Types, model } from "mongoose";
+import { Document, Schema, Types, model } from "mongoose";
 
 // Interface
 interface IPersonalInformation {
@@ -9,11 +8,18 @@ interface IPersonalInformation {
 }
 
 export interface IUser extends Document {
-  uuid: string;
-  personalInformation: Map<string, IPersonalInformation>;
+  uuid: Types.UUID;
+
+  email: string;
+  password: string;
+
+  personalInformation?: IPersonalInformation;
+
+  ownership: Types.ObjectId[];
+
   createdAt: Date;
   updatedAt: Date;
-  ownership: Types.ObjectId[];
+  deletedAt?: Date;
 }
 
 // Schema
@@ -22,32 +28,34 @@ const userSchema = new Schema<IUser>({
     type: Schema.Types.UUID,
     required: true,
     unique: true,
-    default: () => randomUUID(),
+    default: () => new Types.UUID(),
   },
 
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: 6,
+  },
   personalInformation: {
-    type: Map,
-    of: new Schema<IPersonalInformation>({
-      firstName: { type: String, required: true },
-      lastName: { type: String },
-      DOB: { type: Date },
-    }),
+    firstName: { type: String, required: true },
+    lastName: { type: String },
+    DOB: { type: Date },
   },
-
-  createdAt: {
+  ownership: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Doc",
+    },
+  ],
+  deletedAt: {
     type: Date,
-    required: true,
-    default: () => Date.now(),
-  },
-  updatedAt: {
-    type: Date,
-    required: true,
-    default: () => Date.now(),
-  },
-
-  ownership: {
-    type: [Schema.Types.ObjectId],
-    ref: "Docs",
   },
 });
 
