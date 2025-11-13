@@ -2,52 +2,78 @@ import "dotenv/config";
 import express from "express";
 import http from "http";
 import { WebSocketServer } from "ws";
+import { readFileSync } from "fs";
 
+import cors from "cors";
+import { expressMiddleware } from "@as-integrations/express5";
+import { ApolloServer } from "@apollo/server";
 import { Server } from "socket.io";
-import mongoose from "mongoose";
+// import mongoose from "mongoose";
 
-import { ioOnConnect } from "./handler/socket/onConnect.js";
+import { ioOnConnect } from "./socket/onConnect.js";
+import { resolvers } from "./graphql/resolvers.js";
+import typeDefs from "./graphql/schema.js";
+// import { IApolloContext } from "./graphql/apolloContext.js";
 
+// CONFIGURATION
+const appPort: string = process.env.APP_PORT || "4000";
+// const dbURI: string | undefined = process.env.MONGODB_URI;
+
+// SERVER SETUP
 const app = express();
 const httpServer = http.createServer(app);
 
-//PORT
-const appPort: string = process.env.APP_PORT || "4000";
-const dbURI: string | undefined = process.env.MONGODB_URI;
-
-// IO
-const io: Server = new Server(httpServer, {
-  cors: { origin: "*" },
-  wsEngine: WebSocketServer, //connect io.wsEngine to ws.WebSocketServer for improve performance
+const apolloServer = new ApolloServer({
+  typeDefs,
+  resolvers,
 });
 
-// MongoDB
-const connectDB = async () => {
-  try {
-    if (dbURI) {
-      await mongoose.connect(dbURI);
-      console.log("MongoDB connected successfully");
-    } else {
-      console.log("No DB URI was found");
-      process.exit(1);
-    }
-  } catch (e) {
-    console.error("MongoDB connection error:", e);
-    process.exit(1);
-  }
-};
+// SOCKET.IO SETUP
+const io: Server = new Server(httpServer, {
+  cors: { origin: "*" },
+  wsEngine: WebSocketServer,
+});
 
+// MONGO DB SETUP
+// const connectDB = async () => {
+//   try {
+//     if (dbURI) {
+//       await mongoose.connect(dbURI);
+//       console.log("MongoDB connected");
+//     } else {
+//       console.log("No DB URI found");
+//       process.exit(1);
+//     }
+//   } catch (e) {
+//     console.error("MongoDB error:", e);
+//     process.exit(1);
+//   }
+// };
+
+// SERVER INIT
 const startServer = async () => {
   try {
-    await connectDB();
+    // await connectDB();
+    await apolloServer.start();
+
+    app.use(
+      "/graphql",
+      cors(),
+      express.json(),
+      expressMiddleware(apolloServer)
+    );
+
+    ioOnConnect(io);
+
     httpServer.listen(appPort, () => {
-      console.log(`App Init Successfully | App Is On Port ${appPort}`);
+      console.log(`Server Started Succesfully\n====================`);
+      console.log(`Server running on http://localhost:${appPort}`);
+      console.log(`GraphQL endpoint: http://localhost:${appPort}/graphql`);
     });
   } catch (e) {
-    console.error("Server startup error:", e);
+    console.error("Server error:", e);
     process.exit(1);
   }
 };
 
-ioOnConnect(io);
 startServer();

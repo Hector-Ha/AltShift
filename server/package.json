@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "watch": "tsc -w",
-    "dev": "concurrently \"tsc -w\" \"nodemon dist/index.js\"",
+    "dev": "nodemon dist/index.js",
     "start": "node dist/index.js",
     "build": "tsc"
   },
@@ -14,10 +14,14 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@types/mongoose": "^5.11.96",
+    "@apollo/server": "^5.0.0",
+    "@as-integrations/express5": "^1.1.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "gql": "^1.1.2",
+    "graphql": "^16.11.0",
+    "graphql-tag": "^2.12.6",
     "mongodb": "^6.20.0",
     "mongoose": "^8.19.2",
     "socket.io": "^4.8.1",
@@ -26,7 +30,9 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
+    "@types/graphql": "^14.2.3",
     "@types/mongodb": "^4.0.6",
+    "@types/mongoose": "^5.11.96",
     "@types/node": "^24.9.1",
     "@types/ws": "^8.18.1",
     "concurrently": "^9.2.1",

@@ -1,25 +1,78 @@
-import mongoose, { Schema, Document, model, Types } from "mongoose";
-import { randomUUID } from "crypto";
+import { Schema, Document, model, Types } from "mongoose";
 
-export interface IDocs extends Document {
-  uuid: mongoose.Types.UUID;
+export interface IDoc extends Document {
+  uuid: Types.UUID;
+
+  //
+  title: string;
+  content: string;
+  isPublic: boolean;
+
+  //
   owner: Types.ObjectId;
+  collaborators: Types.ObjectId[];
+
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
 }
 
-// Docs Schema
-const docsSchema = new Schema<IDocs>({
+// Doc Schema
+const docSchema = new Schema<IDoc>({
   uuid: {
     type: Schema.Types.UUID,
     unique: true,
     required: true,
-    default: () => randomUUID(),
+    default: new Types.UUID(),
+  },
+
+  title: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 500,
+    default: "Untitled Document",
+  },
+  content: {
+    type: String,
+    required: true,
+    default: "",
+  },
+  isPublic: {
+    type: Boolean,
+    default: false,
   },
   owner: {
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
+
+  collaborators: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  ],
+
+  createdAt: {
+    type: Date,
+    required: true,
+    default: Date.now(),
+  },
+
+  updatedAt: {
+    type: Date,
+    required: true,
+    default: Date.now(),
+  },
+
+  deletedAt: {
+    type: Date,
+    required: false,
+  },
 });
 
 // Model
-export const Docs = model<IDocs>("Docs", docsSchema);
+export const Doc = model<IDoc>("Doc", docSchema);
