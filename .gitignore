@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 planning
+Context.md
+.env
+server/.env
