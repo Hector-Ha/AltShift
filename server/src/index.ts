@@ -2,29 +2,29 @@ import "dotenv/config";
 import express from "express";
 import http from "http";
 import { WebSocketServer } from "ws";
-import { readFileSync } from "fs";
 
 import cors from "cors";
 import { expressMiddleware } from "@as-integrations/express5";
 import { ApolloServer } from "@apollo/server";
 import { Server } from "socket.io";
-// import mongoose from "mongoose";
+import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 
 import { ioOnConnect } from "./socket/onConnect.js";
-import { resolvers } from "./graphql/resolvers.js";
-import typeDefs from "./graphql/schema.js";
-// import { IApolloContext } from "./graphql/apolloContext.js";
+import resolvers from "./graphql/resolvers/resolvers.js";
+import schema from "./graphql/schema/schema.js";
+import apolloContext from "./graphql/context/apolloContext.js";
 
 // CONFIGURATION
 const appPort: string = process.env.APP_PORT || "4000";
-// const dbURI: string | undefined = process.env.MONGODB_URI;
+const dbURI: string | undefined = process.env.MONGODB_URI;
 
 // SERVER SETUP
 const app = express();
 const httpServer = http.createServer(app);
 
 const apolloServer = new ApolloServer({
-  typeDefs,
+  typeDefs: schema,
   resolvers,
 });
 
@@ -35,20 +35,20 @@ const io: Server = new Server(httpServer, {
 });
 
 // MONGO DB SETUP
-// const connectDB = async () => {
-//   try {
-//     if (dbURI) {
-//       await mongoose.connect(dbURI);
-//       console.log("MongoDB connected");
-//     } else {
-//       console.log("No DB URI found");
-//       process.exit(1);
-//     }
-//   } catch (e) {
-//     console.error("MongoDB error:", e);
-//     process.exit(1);
-//   }
-// };
+const connectDB = async () => {
+  try {
+    if (dbURI) {
+      await mongoose.connect(dbURI);
+      console.log("MongoDB connected");
+    } else {
+      console.log("No DB URI found");
+      process.exit(1);
+    }
+  } catch (e) {
+    console.error("MongoDB error:", e);
+    process.exit(1);
+  }
+};
 
 // SERVER INIT
 const startServer = async () => {
@@ -60,7 +60,7 @@ const startServer = async () => {
       "/graphql",
       cors(),
       express.json(),
-      expressMiddleware(apolloServer)
+      expressMiddleware(apolloServer, { context: apolloContext })
     );
 
     ioOnConnect(io);
