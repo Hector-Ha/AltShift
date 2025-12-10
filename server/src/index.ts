@@ -53,7 +53,7 @@ const connectDB = async () => {
 // SERVER INIT
 const startServer = async () => {
   try {
-    // await connectDB();
+    await connectDB();
     await apolloServer.start();
 
     app.use(

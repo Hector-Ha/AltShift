@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { UserModel } from "../../models/MUser.js";
+import { UserModel, UserDocument } from "../../models/MUser.js";
 
 interface TokenPayload {
   id: string;
@@ -10,7 +10,7 @@ interface TokenPayload {
 }
 
 export interface ApolloContext {
-  user: any | null;
+  user: UserDocument | null;
   tokenPayload: TokenPayload | null;
   UserModel: typeof UserModel;
   req: Request;
@@ -26,7 +26,7 @@ const apolloContext = async ({
 }): Promise<ApolloContext> => {
   const authHeader = req.headers.authorization || "";
 
-  let user = null;
+  let user: UserDocument | null = null;
   let tokenPayload: TokenPayload | null = null;
 
   if (!process.env.JWT_SECRET)

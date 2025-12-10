@@ -8,14 +8,31 @@ const typeDefs = gql`
     title: String!
     content: String!
 
-    isPublic: Boolean!
+    isPublic: Boolean! @deprecated(reason: "Use visibility instead")
+    visibility: DocumentStatus!
 
     owner: User!
     collaborators: [User!]!
+    invitations: [User!] # Users who have been invited but not accepted
+    versions: [DocumentVersion!]!
 
     createdAt: DateTime!
     updatedAt: DateTime!
     deletedAt: DateTime
+  }
+
+  type DocumentVersion {
+    id: ID!
+    documentId: ID!
+    content: String! # Snapshot of content
+    createdAt: DateTime!
+    # createdBy: User! # Optional: track who made the version
+  }
+
+  enum DocumentStatus {
+    PUBLIC
+    SHARED
+    PRIVATE
   }
 
   #User
@@ -30,7 +47,7 @@ const typeDefs = gql`
     email: String!
     # password: String!
     personalInformation: PersonalInformation!
-
+    profilePicture: String # URL to avatar
     ownership: [Document!]!
     isCollaborating: [Document!]!
     isFavorite: [Document]!
@@ -38,6 +55,11 @@ const typeDefs = gql`
     createdAt: DateTime!
     updatedAt: DateTime!
     deletedAt: DateTime
+  }
+
+  type AuthPayload {
+    user: User!
+    token: String!
   }
 `;
 
