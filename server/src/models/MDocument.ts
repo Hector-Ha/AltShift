@@ -1,5 +1,13 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, model, Types, HydratedDocument } from "mongoose";
 import { IDocument } from "../interfaces/IDocument.js";
+
+const versionSchema = new Schema(
+  {
+    content: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { _id: true }
+);
 
 const documentSchema = new Schema<IDocument>(
   {
@@ -21,6 +29,18 @@ const documentSchema = new Schema<IDocument>(
       type: Boolean,
       default: false,
     },
+    visibility: {
+      type: String,
+      enum: ["PUBLIC", "SHARED", "PRIVATE"],
+      default: "PRIVATE",
+    },
+    invitations: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    versions: [versionSchema],
 
     owner: {
       type: Schema.Types.ObjectId,
@@ -54,3 +74,4 @@ const documentSchema = new Schema<IDocument>(
 );
 
 export const DocumentModel = model<IDocument>("Doc", documentSchema);
+export type DocumentDocument = HydratedDocument<IDocument>;

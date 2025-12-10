@@ -4,6 +4,7 @@ export interface IPersonalInformation {
   firstName: string;
   lastName?: string;
   DOB?: Date;
+  profilePicture?: string;
 }
 
 export interface IAuthPayload {

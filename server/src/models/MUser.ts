@@ -1,4 +1,4 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, model, Types, HydratedDocument } from "mongoose";
 import {
   IUser,
   IPersonalInformation,
@@ -10,6 +10,7 @@ const personalInfoSchema = new Schema<IPersonalInformation>(
     firstName: { type: String, required: true },
     lastName: { type: String },
     DOB: { type: Date },
+    profilePicture: { type: String }, // URL
   },
   { _id: false } // prevent nested _id
 );
@@ -64,3 +65,4 @@ const authPayloadSchema = new Schema<IAuthPayload>({
 });
 
 export const UserModel = model<IUser>("User", userSchema);
+export type UserDocument = HydratedDocument<IUser>;
