@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { socket } from "../socket/socket";
+import SlateEditor from "../components/text-editor/SlateEditor";
 
 import { gql } from "../gql";
 import type {
@@ -113,8 +114,7 @@ const DocumentEditor: React.FC = () => {
     };
   }, [id, navigate]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newContent = e.target.value;
+  const handleChange = (newContent: string) => {
     setContent(newContent);
 
     if (!isLocalUpdate.current && socket) {
@@ -149,15 +149,43 @@ const DocumentEditor: React.FC = () => {
           flexDirection: "column",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: "10px",
+          }}
+        >
           <h2>{data?.getDocumentByID?.title}</h2>
-          <button onClick={handleSave}>Save to DB</button>
+          <button
+            onClick={handleSave}
+            style={{
+              padding: "8px 16px",
+              cursor: "pointer",
+              background: "#3b82f6",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+            }}
+          >
+            Save to DB
+          </button>
         </div>
-        <textarea
-          style={{ flex: 1, width: "100%", padding: "10px", fontSize: "16px" }}
-          value={content}
-          onChange={handleChange}
-        />
+
+        {/* Pass key={content} to force re-initialization if remote update comes in? 
+            Actually, SlateEditor handles initialContent changes in useEffect now. 
+            So we just pass content. 
+        */}
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            height: "calc(100vh - 100px)",
+          }}
+        >
+          <SlateEditor initialContent={content} onChange={handleChange} />
+        </div>
       </div>
 
       {/* Sidebar */}
