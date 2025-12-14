@@ -1,12 +1,21 @@
 import { gql } from "graphql-tag";
 
 const mutationDefs = gql`
+  input AttachmentInput {
+    content: String!
+    name: String!
+    mimeType: String!
+  }
+
   type Mutation {
     # --- Document ---
 
     # Create & Update
     createDocument(input: createDocumentInput!): Document!
-    createDocumentWithAI(prompt: String!): Document!
+    createDocumentWithAI(
+      prompt: String!
+      attachments: [AttachmentInput]
+    ): Document!
     updateDocument(documentID: ID!, input: updateDocumentInput!): Document!
 
     # Collaborators

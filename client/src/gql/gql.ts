@@ -18,7 +18,7 @@ type Documents = {
     "\n  mutation MarkNotificationAsRead($notificationId: ID!) {\n    markNotificationAsRead(notificationId: $notificationId) {\n      id\n      read\n    }\n  }\n": typeof types.MarkNotificationAsReadDocument,
     "\n  query GetDocuments {\n    getDocuments(filter: {}) {\n      id\n      title\n      updatedAt\n      visibility\n      owner {\n        id\n        email\n      }\n    }\n  }\n": typeof types.GetDocumentsDocument,
     "\n  mutation CreateDocument($input: createDocumentInput!) {\n    createDocument(input: $input) {\n      id\n      title\n    }\n  }\n": typeof types.CreateDocumentDocument,
-    "\n  mutation CreateDocumentWithAI($prompt: String!) {\n    createDocumentWithAI(prompt: $prompt) {\n      id\n      title\n    }\n  }\n": typeof types.CreateDocumentWithAiDocument,
+    "\n  mutation CreateDocumentWithAI($prompt: String!, $attachments: [AttachmentInput]) {\n    createDocumentWithAI(prompt: $prompt, attachments: $attachments) {\n      id\n      title\n    }\n  }\n": typeof types.CreateDocumentWithAiDocument,
     "\n  query GetDocument($id: ID!) {\n    getDocumentByID(id: $id) {\n      id\n      title\n      content\n    }\n  }\n": typeof types.GetDocumentDocument,
     "\n  mutation UpdateDocument($id: ID!, $input: updateDocumentInput!) {\n    updateDocument(documentID: $id, input: $input) {\n      id\n      content\n    }\n  }\n": typeof types.UpdateDocumentDocument,
     "\n  mutation Login($email: String!, $password: String!) {\n    login(email: $email, password: $password) {\n      token\n      user {\n        id\n        email\n      }\n    }\n  }\n": typeof types.LoginDocument,
@@ -29,7 +29,7 @@ const documents: Documents = {
     "\n  mutation MarkNotificationAsRead($notificationId: ID!) {\n    markNotificationAsRead(notificationId: $notificationId) {\n      id\n      read\n    }\n  }\n": types.MarkNotificationAsReadDocument,
     "\n  query GetDocuments {\n    getDocuments(filter: {}) {\n      id\n      title\n      updatedAt\n      visibility\n      owner {\n        id\n        email\n      }\n    }\n  }\n": types.GetDocumentsDocument,
     "\n  mutation CreateDocument($input: createDocumentInput!) {\n    createDocument(input: $input) {\n      id\n      title\n    }\n  }\n": types.CreateDocumentDocument,
-    "\n  mutation CreateDocumentWithAI($prompt: String!) {\n    createDocumentWithAI(prompt: $prompt) {\n      id\n      title\n    }\n  }\n": types.CreateDocumentWithAiDocument,
+    "\n  mutation CreateDocumentWithAI($prompt: String!, $attachments: [AttachmentInput]) {\n    createDocumentWithAI(prompt: $prompt, attachments: $attachments) {\n      id\n      title\n    }\n  }\n": types.CreateDocumentWithAiDocument,
     "\n  query GetDocument($id: ID!) {\n    getDocumentByID(id: $id) {\n      id\n      title\n      content\n    }\n  }\n": types.GetDocumentDocument,
     "\n  mutation UpdateDocument($id: ID!, $input: updateDocumentInput!) {\n    updateDocument(documentID: $id, input: $input) {\n      id\n      content\n    }\n  }\n": types.UpdateDocumentDocument,
     "\n  mutation Login($email: String!, $password: String!) {\n    login(email: $email, password: $password) {\n      token\n      user {\n        id\n        email\n      }\n    }\n  }\n": types.LoginDocument,
@@ -69,7 +69,7 @@ export function gql(source: "\n  mutation CreateDocument($input: createDocumentI
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  mutation CreateDocumentWithAI($prompt: String!) {\n    createDocumentWithAI(prompt: $prompt) {\n      id\n      title\n    }\n  }\n"): (typeof documents)["\n  mutation CreateDocumentWithAI($prompt: String!) {\n    createDocumentWithAI(prompt: $prompt) {\n      id\n      title\n    }\n  }\n"];
+export function gql(source: "\n  mutation CreateDocumentWithAI($prompt: String!, $attachments: [AttachmentInput]) {\n    createDocumentWithAI(prompt: $prompt, attachments: $attachments) {\n      id\n      title\n    }\n  }\n"): (typeof documents)["\n  mutation CreateDocumentWithAI($prompt: String!, $attachments: [AttachmentInput]) {\n    createDocumentWithAI(prompt: $prompt, attachments: $attachments) {\n      id\n      title\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

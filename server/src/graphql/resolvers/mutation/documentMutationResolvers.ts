@@ -4,6 +4,10 @@ import { UserModel } from "../../../models/MUser.js";
 import { MutationResolvers } from "../../../generated/graphql.js";
 import { NotificationModel } from "../../../models/MNotification.js";
 import { NotificationType } from "../../../interfaces/INotification.js";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pdf = require("pdf-parse");
+import mammoth from "mammoth";
 
 const documentMutationResolvers: MutationResolvers = {
   createDocument: async (_, { input }, context) => {
@@ -20,13 +24,63 @@ const documentMutationResolvers: MutationResolvers = {
     return result;
   },
 
-  createDocumentWithAI: async (_, { prompt }, context) => {
+  createDocumentWithAI: async (_, { prompt, attachments }, context) => {
     if (!context.user) throw new Error("Not Authenticated");
 
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) throw new Error("AI Service missing configuration");
 
+    // Parse Attachments
+    let contextText = "";
+    if (attachments && attachments.length > 0) {
+      for (const file of attachments) {
+        try {
+          // content is base64 string
+          const buffer = Buffer.from(file.content, "base64");
+          let extractedText = "";
+
+          if (file.mimeType === "application/pdf") {
+            try {
+              // Dynamic require to prevent startup crash if module has issues
+              const pdf = require("pdf-parse");
+              const data = await pdf(buffer);
+              extractedText = data.text;
+            } catch (e) {
+              console.error("PDF Parse Error:", e);
+              extractedText = "[Error parsing PDF: Library issue]";
+            }
+          } else if (
+            file.mimeType ===
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          ) {
+            const result = await mammoth.extractRawText({ buffer });
+            extractedText = result.value;
+          } else if (
+            file.mimeType === "text/plain" ||
+            file.mimeType === "text/markdown"
+          ) {
+            extractedText = buffer.toString("utf-8");
+          }
+
+          if (extractedText && extractedText.trim().length > 0) {
+            contextText += `\n\n--- Attachment: ${
+              file.name
+            } ---\n${extractedText.substring(0, 100000)}`; // Simple safety cap
+          }
+        } catch (err: any) {
+          console.error(`Failed to parse attachment ${file.name}:`, err);
+          contextText += `\n\n[Error parsing attachment ${file.name}]\n`;
+        }
+      }
+    }
+
     try {
+      const systemContent =
+        "You are a helpful assistant that generates detailed document content. Return only the content in Markdown format. Do not include introductory text like 'Here is the document:'.";
+      const userContent = contextText
+        ? `${prompt}\n\nAdditional Context from files:${contextText}`
+        : prompt;
+
       const response = await fetch(
         "https://api.groq.com/openai/v1/chat/completions",
         {
@@ -39,12 +93,11 @@ const documentMutationResolvers: MutationResolvers = {
             messages: [
               {
                 role: "system",
-                content:
-                  "You are a helpful assistant that generates detailed document content. Return only the content in Markdown format. Do not include introductory text like 'Here is the document:'.",
+                content: systemContent,
               },
               {
                 role: "user",
-                content: prompt,
+                content: userContent,
               },
             ],
             model: "llama-3.1-8b-instant",
@@ -402,3 +455,4 @@ const documentMutationResolvers: MutationResolvers = {
 };
 
 export default documentMutationResolvers;
+// Force restart

@@ -13,6 +13,7 @@ import type {
   CreateDocumentWithAiMutationVariables,
 } from "../gql/graphql";
 import NotificationList from "../components/NotificationList";
+import RichTextPrompt from "../components/RichTextPrompt";
 import "../styles/dashboard.css";
 
 const GET_DOCUMENTS = gql(`
@@ -40,8 +41,8 @@ const CREATE_DOCUMENT = gql(`
 `);
 
 const CREATE_DOCUMENT_WITH_AI = gql(`
-  mutation CreateDocumentWithAI($prompt: String!) {
-    createDocumentWithAI(prompt: $prompt) {
+  mutation CreateDocumentWithAI($prompt: String!, $attachments: [AttachmentInput]) {
+    createDocumentWithAI(prompt: $prompt, attachments: $attachments) {
       id
       title
     }
@@ -59,7 +60,7 @@ const Dashboard: React.FC = () => {
 
   const [filter, setFilter] = useState("RECENTS");
   const [search, setSearch] = useState("");
-  const [aiPrompt, setAiPrompt] = useState("");
+  /* const [aiPrompt, setAiPrompt] = useState(""); */
   const userId = localStorage.getItem("userId");
 
   const [createDocument] = useMutation<
@@ -69,6 +70,9 @@ const Dashboard: React.FC = () => {
     onCompleted: (data) => {
       console.log("Mutation completed:", data);
       refetch();
+      if (data.createDocument?.id) {
+        navigate(`/doc/${data.createDocument.id}`);
+      }
     },
     onError: (err) => {
       console.error("Mutation error:", err);
@@ -83,7 +87,7 @@ const Dashboard: React.FC = () => {
     onCompleted: (data) => {
       console.log("AI Mutation completed:", data);
       refetch();
-      setAiPrompt("");
+      // setAiPrompt(""); // Removed as state is local to RichTextPrompt now
       if (data.createDocumentWithAI?.id) {
         navigate(`/doc/${data.createDocumentWithAI.id}`);
       }
@@ -241,23 +245,14 @@ const Dashboard: React.FC = () => {
             </button>
           </div>
 
-          <textarea
-            className="editor-placeholder"
-            placeholder={
-              aiLoading
-                ? "Generating document..."
-                : "Type here to generate a document with AI (e.g., 'Project proposal for new app'). Press Enter."
+          <RichTextPrompt
+            onSubmit={(text, attachments) =>
+              createDocumentWithAI({
+                variables: { prompt: text, attachments: attachments as any },
+              })
             }
-            value={aiPrompt}
-            onChange={(e) => setAiPrompt(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                if (!aiPrompt.trim()) return;
-                createDocumentWithAI({ variables: { prompt: aiPrompt } });
-              }
-            }}
-            disabled={aiLoading}
+            loading={aiLoading}
+            placeholder="Type here to generate a document with AI (e.g., 'Project proposal for new app'). Press Enter to send."
           />
 
           <NotificationList />
