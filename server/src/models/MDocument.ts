@@ -21,7 +21,6 @@ const documentSchema = new Schema<IDocument>(
 
     content: {
       type: String,
-      required: true,
       default: "",
     },
 

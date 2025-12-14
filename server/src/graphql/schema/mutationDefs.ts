@@ -6,6 +6,7 @@ const mutationDefs = gql`
 
     # Create & Update
     createDocument(input: createDocumentInput!): Document!
+    createDocumentWithAI(prompt: String!): Document!
     updateDocument(documentID: ID!, input: updateDocumentInput!): Document!
 
     # Collaborators

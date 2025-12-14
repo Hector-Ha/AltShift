@@ -57,9 +57,40 @@ const typeDefs = gql`
     deletedAt: DateTime
   }
 
+  type Notification {
+    id: ID!
+    recipient: User!
+    sender: User!
+    type: NotificationType!
+    document: Document
+    message: String!
+    read: Boolean!
+    createdAt: DateTime!
+  }
+
+  enum NotificationType {
+    DOCUMENT_INVITE
+    DOCUMENT_UPDATE
+    DOCUMENT_DELETE
+    OWNERSHIP_TRANSFER
+  }
+
   type AuthPayload {
     user: User!
     token: String!
+  }
+
+  type Query {
+    myNotifications(filter: NotificationFilter): [Notification!]!
+  }
+
+  input NotificationFilter {
+    read: Boolean
+  }
+
+  type Mutation {
+    markNotificationAsRead(notificationId: ID!): Notification!
+    markAllNotificationsAsRead: Boolean!
   }
 `;
 
