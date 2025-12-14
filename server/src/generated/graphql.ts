@@ -20,6 +20,12 @@ export type Scalars = {
   DateTime: { input: any; output: any; }
 };
 
+export type AttachmentInput = {
+  content: Scalars['String']['input'];
+  mimeType: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+};
+
 export type AuthPayload = {
   __typename?: 'AuthPayload';
   token: Scalars['String']['output'];
@@ -124,6 +130,7 @@ export type MutationCreateDocumentArgs = {
 
 
 export type MutationCreateDocumentWithAiArgs = {
+  attachments?: InputMaybe<Array<InputMaybe<AttachmentInput>>>;
   prompt: Scalars['String']['input'];
 };
 
@@ -428,6 +435,7 @@ export type DirectiveResolverFn<TResult = Record<PropertyKey, never>, TParent = 
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  AttachmentInput: AttachmentInput;
   AuthPayload: ResolverTypeWrapper<Omit<AuthPayload, 'user'> & { user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
@@ -459,6 +467,7 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  AttachmentInput: AttachmentInput;
   AuthPayload: Omit<AuthPayload, 'user'> & { user: ResolversParentTypes['User'] };
   Boolean: Scalars['Boolean']['output'];
   DateTime: Scalars['DateTime']['output'];
