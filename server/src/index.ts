@@ -14,6 +14,13 @@ import { ioOnConnect } from "./socket/onConnect.js";
 import resolvers from "./graphql/resolvers/resolvers.js";
 import schema from "./graphql/schema/schema.js";
 import apolloContext from "./graphql/context/apolloContext.js";
+import { authMiddleware } from "./socket/middleware.js";
+import {
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData,
+} from "./socket/interfaces.js";
 
 // CONFIGURATION
 const appPort: string = process.env.APP_PORT || "4000";
@@ -29,7 +36,12 @@ const apolloServer = new ApolloServer({
 });
 
 // SOCKET.IO SETUP
-const io: Server = new Server(httpServer, {
+const io = new Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>(httpServer, {
   cors: { origin: "*" },
   wsEngine: WebSocketServer,
 });
@@ -62,6 +74,8 @@ const startServer = async () => {
       express.json(),
       expressMiddleware(apolloServer, { context: apolloContext })
     );
+
+    io.use(authMiddleware);
 
     ioOnConnect(io);
 

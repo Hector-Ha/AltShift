@@ -76,6 +76,7 @@ export type Mutation = {
   addCollaborator: Document;
   changePassword: Scalars['Boolean']['output'];
   createDocument: Document;
+  createDocumentWithAI: Document;
   createSnapshot: DocumentVersion;
   createUser: AuthPayload;
   declineCollaborateInvitation: Scalars['Boolean']['output'];
@@ -87,6 +88,8 @@ export type Mutation = {
   leaveDocument: Scalars['Boolean']['output'];
   login: AuthPayload;
   logout: Scalars['Boolean']['output'];
+  markAllNotificationsAsRead: Scalars['Boolean']['output'];
+  markNotificationAsRead: Notification;
   removeCollaborator: Document;
   resetPassword: Scalars['Boolean']['output'];
   restoreDocument: Document;
@@ -117,6 +120,11 @@ export type MutationChangePasswordArgs = {
 
 export type MutationCreateDocumentArgs = {
   input: CreateDocumentInput;
+};
+
+
+export type MutationCreateDocumentWithAiArgs = {
+  prompt: Scalars['String']['input'];
 };
 
 
@@ -172,6 +180,11 @@ export type MutationLoginArgs = {
 };
 
 
+export type MutationMarkNotificationAsReadArgs = {
+  notificationId: Scalars['ID']['input'];
+};
+
+
 export type MutationRemoveCollaboratorArgs = {
   documentID: Scalars['ID']['input'];
   userID: Scalars['ID']['input'];
@@ -216,6 +229,29 @@ export type MutationVerifyEmailArgs = {
   token: Scalars['String']['input'];
 };
 
+export type Notification = {
+  __typename?: 'Notification';
+  createdAt: Scalars['DateTime']['output'];
+  document?: Maybe<Document>;
+  id: Scalars['ID']['output'];
+  message: Scalars['String']['output'];
+  read: Scalars['Boolean']['output'];
+  recipient: User;
+  sender: User;
+  type: NotificationType;
+};
+
+export type NotificationFilter = {
+  read?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export enum NotificationType {
+  DocumentDelete = 'DOCUMENT_DELETE',
+  DocumentInvite = 'DOCUMENT_INVITE',
+  DocumentUpdate = 'DOCUMENT_UPDATE',
+  OwnershipTransfer = 'OWNERSHIP_TRANSFER'
+}
+
 export type PaginationInput = {
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
@@ -241,6 +277,7 @@ export type Query = {
   getDocuments: Array<Document>;
   getDocumentsInTrash: Array<Document>;
   getUserByID?: Maybe<User>;
+  myNotifications: Array<Notification>;
 };
 
 
@@ -258,6 +295,11 @@ export type QueryGetDocumentsArgs = {
 
 export type QueryGetUserByIdArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryMyNotificationsArgs = {
+  filter?: InputMaybe<NotificationFilter>;
 };
 
 export type User = {
@@ -397,6 +439,9 @@ export type ResolversTypes = {
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
+  Notification: ResolverTypeWrapper<Omit<Notification, 'document' | 'recipient' | 'sender'> & { document?: Maybe<ResolversTypes['Document']>, recipient: ResolversTypes['User'], sender: ResolversTypes['User'] }>;
+  NotificationFilter: NotificationFilter;
+  NotificationType: NotificationType;
   PaginationInput: PaginationInput;
   PersonalInformation: ResolverTypeWrapper<PersonalInformation>;
   PersonalInformationInput: PersonalInformationInput;
@@ -424,6 +469,8 @@ export type ResolversParentTypes = {
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
   Mutation: Record<PropertyKey, never>;
+  Notification: Omit<Notification, 'document' | 'recipient' | 'sender'> & { document?: Maybe<ResolversParentTypes['Document']>, recipient: ResolversParentTypes['User'], sender: ResolversParentTypes['User'] };
+  NotificationFilter: NotificationFilter;
   PaginationInput: PaginationInput;
   PersonalInformation: PersonalInformation;
   PersonalInformationInput: PersonalInformationInput;
@@ -475,6 +522,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addCollaborator?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationAddCollaboratorArgs, 'documentID' | 'userID'>>;
   changePassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationChangePasswordArgs, 'input' | 'userID'>>;
   createDocument?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationCreateDocumentArgs, 'input'>>;
+  createDocumentWithAI?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationCreateDocumentWithAiArgs, 'prompt'>>;
   createSnapshot?: Resolver<ResolversTypes['DocumentVersion'], ParentType, ContextType, RequireFields<MutationCreateSnapshotArgs, 'documentID'>>;
   createUser?: Resolver<ResolversTypes['AuthPayload'], ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'input'>>;
   declineCollaborateInvitation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeclineCollaborateInvitationArgs, 'documentID'>>;
@@ -486,6 +534,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   leaveDocument?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationLeaveDocumentArgs, 'documentID'>>;
   login?: Resolver<ResolversTypes['AuthPayload'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'email' | 'password'>>;
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  markAllNotificationsAsRead?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  markNotificationAsRead?: Resolver<ResolversTypes['Notification'], ParentType, ContextType, RequireFields<MutationMarkNotificationAsReadArgs, 'notificationId'>>;
   removeCollaborator?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationRemoveCollaboratorArgs, 'documentID' | 'userID'>>;
   resetPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationResetPasswordArgs, 'input'>>;
   restoreDocument?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationRestoreDocumentArgs, 'documentID'>>;
@@ -494,6 +544,17 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateDocument?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationUpdateDocumentArgs, 'documentID' | 'input'>>;
   updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'input' | 'userID'>>;
   verifyEmail?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationVerifyEmailArgs, 'token'>>;
+};
+
+export type NotificationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Notification'] = ResolversParentTypes['Notification']> = {
+  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  document?: Resolver<Maybe<ResolversTypes['Document']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  read?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  recipient?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['NotificationType'], ParentType, ContextType>;
 };
 
 export type PersonalInformationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PersonalInformation'] = ResolversParentTypes['PersonalInformation']> = {
@@ -508,6 +569,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getDocuments?: Resolver<Array<ResolversTypes['Document']>, ParentType, ContextType, Partial<QueryGetDocumentsArgs>>;
   getDocumentsInTrash?: Resolver<Array<ResolversTypes['Document']>, ParentType, ContextType>;
   getUserByID?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByIdArgs, 'id'>>;
+  myNotifications?: Resolver<Array<ResolversTypes['Notification']>, ParentType, ContextType, Partial<QueryMyNotificationsArgs>>;
 };
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
@@ -529,6 +591,7 @@ export type Resolvers<ContextType = any> = {
   Document?: DocumentResolvers<ContextType>;
   DocumentVersion?: DocumentVersionResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  Notification?: NotificationResolvers<ContextType>;
   PersonalInformation?: PersonalInformationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

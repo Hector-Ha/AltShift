@@ -2,6 +2,8 @@ import { Types } from "mongoose";
 import { DocumentModel } from "../../../models/MDocument.js";
 import { UserModel } from "../../../models/MUser.js";
 import { MutationResolvers } from "../../../generated/graphql.js";
+import { NotificationModel } from "../../../models/MNotification.js";
+import { NotificationType } from "../../../interfaces/INotification.js";
 
 const documentMutationResolvers: MutationResolvers = {
   createDocument: async (_, { input }, context) => {
@@ -9,12 +11,77 @@ const documentMutationResolvers: MutationResolvers = {
 
     const newDocument = new DocumentModel({
       ...input,
+      content: input.content || "",
       owner: context.user._id,
       collaborators: [],
     });
 
     const result = await newDocument.save();
     return result;
+  },
+
+  createDocumentWithAI: async (_, { prompt }, context) => {
+    if (!context.user) throw new Error("Not Authenticated");
+
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) throw new Error("AI Service missing configuration");
+
+    try {
+      const response = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are a helpful assistant that generates detailed document content. Return only the content in Markdown format. Do not include introductory text like 'Here is the document:'.",
+              },
+              {
+                role: "user",
+                content: prompt,
+              },
+            ],
+            model: "llama-3.1-8b-instant",
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error("Groq API Error:", errText);
+        throw new Error("Failed to generate content");
+      }
+
+      const data: any = await response.json();
+      const content = data.choices[0]?.message?.content || "";
+
+      // Simple title extraction
+      let title = "AI Generated Document";
+      const firstLine = content.split("\n")[0];
+      if (firstLine && firstLine.length < 60) {
+        title = firstLine.replace(/^[#\s]+/, "").trim();
+      }
+
+      const newDocument = new DocumentModel({
+        title,
+        content,
+        owner: context.user._id,
+        visibility: "PRIVATE",
+        isPublic: false,
+        collaborators: [],
+      });
+
+      return await newDocument.save();
+    } catch (error) {
+      console.error("AI Generation Error:", error);
+      throw new Error("AI Generation failed");
+    }
   },
 
   updateDocument: async (_, { documentID, input }, context) => {
@@ -69,6 +136,10 @@ const documentMutationResolvers: MutationResolvers = {
     }
 
     const result = await document.save();
+
+    // Removed explicit notification on every save/update to favor session-based notifications (on disconnect).
+    // NOTIFICATION: Document Update handled by socket onDisconnect if changes occurred.
+
     return result;
   },
   // Delete
@@ -81,6 +152,26 @@ const documentMutationResolvers: MutationResolvers = {
 
     document.deletedAt = new Date();
     await document.save();
+
+    // NOTIFICATION: Document Delete
+    // Notify collaborators
+    const recipients = document.collaborators.filter(
+      (c) => c.toString() !== context.user._id.toString()
+    );
+
+    const notifications = recipients.map((recipientId) => ({
+      recipient: recipientId,
+      sender: context.user._id,
+      type: NotificationType.DOCUMENT_DELETE,
+      document: document._id,
+      message: `${context.user.email} deleted the document "${document.title}"`,
+      read: false,
+    }));
+
+    if (notifications.length > 0) {
+      await NotificationModel.insertMany(notifications);
+    }
+
     return document.deletedAt;
   },
 
@@ -123,6 +214,17 @@ const documentMutationResolvers: MutationResolvers = {
 
     document.invitations.push(new Types.ObjectId(userID));
     await document.save();
+
+    // NOTIFICATION: Document Invite
+    await NotificationModel.create({
+      recipient: new Types.ObjectId(userID),
+      sender: context.user._id,
+      type: NotificationType.DOCUMENT_INVITE,
+      document: document._id,
+      message: `${context.user.email} invited you to edit "${document.title}"`,
+      read: false,
+    });
+
     return document;
   },
 
@@ -211,6 +313,17 @@ const documentMutationResolvers: MutationResolvers = {
     await document.save();
     // In a real app, might update User models too (ownership arrays), but standard Mongoose relationships usually just store ref on one side or sync manually.
     // The User type resolver probably queries based on owner field, so this might be enough.
+
+    // NOTIFICATION: Ownership Transfer
+    await NotificationModel.create({
+      recipient: new Types.ObjectId(input.newOwnerID),
+      sender: context.user._id,
+      type: NotificationType.DOCUMENT_UPDATE, // Or OWNERSHIP_TRANSFER if specific type desired
+      document: document._id,
+      message: `${context.user.email} transferred ownership of "${document.title}" to you`,
+      read: false,
+    });
+
     return document;
   },
 

@@ -126,7 +126,7 @@ const userMutationResolvers: MutationResolvers = {
     const isValid = await bcrypt.compare(password, authUser?.password);
     if (!isValid) throw Error("Credetial Is Not Match");
 
-    const token = jwt.sign({ userID: authUser.id }, JWT_SECRET, {
+    const token = jwt.sign({ id: authUser.id }, JWT_SECRET, {
       expiresIn: "7d",
     });
 

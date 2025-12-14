@@ -1,9 +1,63 @@
 import { Socket, Server } from "socket.io";
 import { SOCKET_EVENTS } from "./events.js";
+import { DocumentModel } from "../models/MDocument.js";
+import { NotificationModel } from "../models/MNotification.js";
+import { NotificationType } from "../generated/graphql.js"; // or hardcode if needed
+import { Types } from "mongoose";
 
 export const onDisconnect = (socket: Socket, io: Server) => {
-  socket.on(SOCKET_EVENTS.DISCONNECT, () => {
+  socket.on(SOCKET_EVENTS.DISCONNECT, async () => {
     console.log(`Socket disconnected: ${socket.id}`);
-    // Additional cleanup logic can go here (e.g., removing user from presence list)
+
+    // Check if user has made edits in this session
+    if (
+      socket.data.documentID &&
+      socket.data.hasUnsavedChanges &&
+      socket.data.user
+    ) {
+      const docId = socket.data.documentID;
+      const user = socket.data.user;
+
+      console.log(
+        `User ${user.email} left document ${docId} with changes. Generating notifications...`
+      );
+
+      try {
+        const document = await DocumentModel.findById(docId);
+        if (document) {
+          const recipients = new Set<string>();
+          if (document.owner.toString() !== user._id.toString()) {
+            recipients.add(document.owner.toString());
+          }
+          document.collaborators.forEach((collab) => {
+            if (collab.toString() !== user._id.toString()) {
+              recipients.add(collab.toString());
+            }
+          });
+
+          const notifications = Array.from(recipients).map((recipientId) => ({
+            recipient: new Types.ObjectId(recipientId),
+            sender: user._id,
+            type: "DOCUMENT_UPDATE" as any, // Enum mapping might be tricky just casting for now
+            document: document._id,
+            message: `${user.email} updated the document "${document.title}"`,
+            read: false,
+          }));
+
+          if (notifications.length > 0) {
+            const inserted = await NotificationModel.insertMany(notifications);
+            console.log(`Created ${inserted.length} notifications.`);
+
+            // Emit real-time notification to recipients
+            inserted.forEach((notif) => {
+              const recId = notif.recipient.toString();
+              io.to(`user:${recId}`).emit("new-notification", notif);
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error generating disconnect notification:", error);
+      }
+    }
   });
 };
