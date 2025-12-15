@@ -14,17 +14,43 @@ export type CustomText = {
   [key: string]: unknown;
 };
 
-export type CustomElement = {
+export type ParagraphElement = {
   type:
     | "paragraph"
-    | "heading-one"
-    | "heading-two"
+    | "block-quote"
     | "list-item"
-    | "bulleted-list"
-    | "numbered-list"
-    | "block-quote";
+    | "heading-one"
+    | "heading-two"; // Grouping simple blocks for now to save space
+  align?: string;
   children: CustomText[];
 };
+
+export type ListElement = {
+  type: "bulleted-list" | "numbered-list";
+  align?: string;
+  children: ListItemElement[];
+};
+
+export type ListItemElement = {
+  type: "list-item";
+  children: CustomText[];
+};
+
+export type PageElement = {
+  type: "page";
+  children: (CustomElement | CustomText)[]; // Pages contain other blocks
+};
+
+// We need to break down CustomElement to allow for Pages that contain other Elements
+export type CustomElement =
+  | { type: "paragraph"; align?: string; children: CustomText[] }
+  | { type: "heading-one"; align?: string; children: CustomText[] }
+  | { type: "heading-two"; align?: string; children: CustomText[] }
+  | { type: "block-quote"; align?: string; children: CustomText[] }
+  | { type: "list-item"; children: CustomText[] }
+  | { type: "bulleted-list"; align?: string; children: CustomElement[] }
+  | { type: "numbered-list"; align?: string; children: CustomElement[] }
+  | PageElement;
 
 declare module "slate" {
   interface CustomTypes {
