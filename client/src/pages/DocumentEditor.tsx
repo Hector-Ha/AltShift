@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { socket } from "../socket/socket";
 import SlateEditor from "../components/text-editor/SlateEditor";
+import Logo from "../components/Logo";
 
 import { gql } from "../gql";
 import type {
@@ -139,100 +140,59 @@ const DocumentEditor: React.FC = () => {
   if (error) return <div>Error: {error.message}</div>;
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      {/* Editor Area */}
-      <div
-        style={{
-          flex: 1,
-          padding: "20px",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "10px",
-          }}
-        >
-          <h2>{data?.getDocumentByID?.title}</h2>
-          <button
-            onClick={handleSave}
+    <div className="editor-page">
+      {/* Main Content Area */}
+      <div className="editor-main">
+        <div className="editor-header">
+          <Link
+            to="/dashboard"
             style={{
-              padding: "8px 16px",
-              cursor: "pointer",
-              background: "#3b82f6",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
+              marginRight: "1rem",
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
             }}
           >
-            Save to DB
+            <span
+              className="material-icons"
+              style={{ fontSize: "20px", color: "#64748b" }}
+            >
+              arrow_back
+            </span>
+          </Link>
+          <h2 className="editor-title">{data?.getDocumentByID?.title}</h2>
+          <button className="save-btn" onClick={handleSave}>
+            Save
           </button>
         </div>
 
-        {/* Pass key={content} to force re-initialization if remote update comes in? 
-            Actually, SlateEditor handles initialContent changes in useEffect now. 
-            So we just pass content. 
-        */}
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            height: "calc(100vh - 100px)",
-          }}
-        >
+        <div className="editor-canvas">
           <SlateEditor initialContent={content} onChange={handleChange} />
         </div>
       </div>
 
-      {/* Sidebar */}
-      <div
-        style={{
-          width: "250px",
-          borderLeft: "1px solid #ccc",
-          padding: "10px",
-          background: "#f9f9f9",
-        }}
-      >
-        <h3>Active Users</h3>
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {activeUsers.map((u) => (
-            <li
-              key={u.socketId}
-              style={{
-                marginBottom: "10px",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-            >
-              <div
-                style={{
-                  width: "30px",
-                  height: "30px",
-                  borderRadius: "50%",
-                  backgroundColor: u.color,
-                  color: "white",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "12px",
-                }}
-              >
-                {u.firstName?.[0] || u.email?.[0] || "?"}
-              </div>
-              <div>
-                <div style={{ fontWeight: "bold", fontSize: "14px" }}>
-                  {u.firstName || "User"}
+      {/* Sidebar (Right) */}
+      <div className="editor-sidebar">
+        <div className="sidebar-header">Active Users</div>
+        <div className="sidebar-content">
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {activeUsers.map((u) => (
+              <li key={u.socketId} className="active-user-item">
+                <div
+                  className="user-avatar"
+                  style={{ backgroundColor: u.color }}
+                >
+                  {u.firstName?.[0] || u.email?.[0] || "?"}
                 </div>
-                <div style={{ fontSize: "10px", color: "gray" }}>{u.email}</div>
-              </div>
-            </li>
-          ))}
-        </ul>
+                <div className="user-info">
+                  <div className="user-name">{u.firstName || "User"}</div>
+                  <div className="user-email">{u.email}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );

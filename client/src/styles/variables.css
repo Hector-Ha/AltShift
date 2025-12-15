@@ -1,29 +1,33 @@
 :root {
-  /* Primary Brand Colors */
-  --primary-blue: #0052cc;
-  --primary-blue-hover: #0047b3;
-  --secondary-blue: #2684ff;
+  /* Primary Brand Colors (Indigo) */
+  --primary-blue: #4f46e5;
+  --primary-blue-hover: #4338ca;
+  --secondary-blue: #6366f1; /* Lighter indigo */
 
-  /* Neutral Colors */
-  --text-primary: #172b4d;
-  --text-secondary: #5e6c84;
-  --bg-light: #f4f5f7;
+  /* Neutral Colors (Slate) */
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --bg-light: #f8fafc;
   --bg-white: #ffffff;
-  --border-color: #dfe1e6;
+  --border-color: #e2e8f0;
 
-  /* Accent Support */
-  --success-green: #36b37e;
-  --warning-yellow: #ffab00;
-  --danger-red: #ff5630;
+  /* Accent Support- Adjusted to match saturation */
+  --success-green: #10b981;
+  --warning-yellow: #f59e0b;
+  --danger-red: #ef4444;
 
   /* Font settings */
-  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  --font-family-base: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
 
   /* Spacing */
   --spacing-sm: 8px;
   --spacing-md: 16px;
   --spacing-lg: 24px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 body {
