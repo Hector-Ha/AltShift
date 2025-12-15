@@ -8,6 +8,7 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
 import mammoth from "mammoth";
+import { markdownToSlate } from "../../../utils/markdownToSlate.js";
 
 const documentMutationResolvers: MutationResolvers = {
   createDocument: async (_, { input }, context) => {
@@ -121,9 +122,22 @@ const documentMutationResolvers: MutationResolvers = {
         title = firstLine.replace(/^[#\s]+/, "").trim();
       }
 
+      // Convert Markdown to Slate JSON with Pagination
+      const slateNodes = markdownToSlate(content);
+      // Pagination Wrapper: The editor expects top-level nodes to be 'page'
+      const paginatedContent = [
+        {
+          type: "page",
+          children:
+            slateNodes.length > 0
+              ? slateNodes
+              : [{ type: "paragraph", children: [{ text: "" }] }],
+        },
+      ];
+
       const newDocument = new DocumentModel({
         title,
-        content,
+        content: JSON.stringify(paginatedContent),
         owner: context.user._id,
         visibility: "PRIVATE",
         isPublic: false,

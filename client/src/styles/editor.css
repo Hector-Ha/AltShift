@@ -76,33 +76,56 @@
   display: flex;
   justify-content: center;
   padding: 40px 20px 80px; /* Top, Horizontal, Bottom padding */
+  background-color: var(--bg-canvas); /* Darker background */
 }
 
-/* Slate Editor Wrapper (The "Paper") */
+/* Slate Editor Wrapper (The "Desk") */
 .slate-editor-wrapper {
   width: 100%;
-  max-width: 850px;
-  background-color: var(--bg-white);
-  min-height: 1100px; /* A4-ish height feels */
-  padding: 60px;
-  box-shadow: var(--shadow-md);
-  border-radius: 2px; /* Slight round, mostly paper sharp */
+  max-width: 100%; /* Full width to hold pages */
+  background-color: transparent; /* Wrapper is now just a container */
+  min-height: 100%;
+  padding: 40px 0; /* Vertical padding for the desk */
+  box-shadow: none; /* Shadow moves to the page */
+  border-radius: 0;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px; /* Space between pages */
+}
+
+/* Individual Page */
+.slate-page {
+  width: 794px; /* A4 width */
+  min-height: 1123px; /* Allow growth if JS fails, but we want fixed for paging */
+  height: 1123px;
+  background-color: var(--bg-white);
+  padding: 96px; /* A4 standard margins */
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Stronger shadow */
+  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden; /* Hide overflow until pagination moves it */
+  box-sizing: border-box; /* Important for accurate height calculations */
 }
 
 /* Toolbar */
 .slate-toolbar {
-  position: sticky;
-  top: 0;
-  background-color: var(--bg-white); /* Or maybe slightly transparent/blur? */
-  padding: 12px 0;
-  border-bottom: 2px solid var(--bg-gray);
-  margin-bottom: 24px;
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-white);
+  box-shadow: var(--shadow-lg);
+  border-radius: 50px;
+  padding: 10px 24px;
   display: flex;
   gap: 4px;
   align-items: center;
   flex-wrap: wrap;
-  z-index: 5;
+  z-index: 100;
+  border: 1px solid var(--border-color); /* Added border for better visibility */
 }
 
 .toolbar-btn {
@@ -111,7 +134,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 4px;
+  border-radius: 50%; /* Rounded buttons match the rounded bar */
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s;
@@ -125,8 +148,8 @@
 }
 
 .toolbar-btn.active {
-  background-color: #eff6ff;
-  color: var(--primary-blue);
+  background-color: var(--primary-blue); /* Solid blue active state */
+  color: white;
 }
 
 .toolbar-separator {

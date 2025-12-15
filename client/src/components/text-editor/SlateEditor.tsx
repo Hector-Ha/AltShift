@@ -5,6 +5,8 @@ import { Slate, Editable, withReact } from "slate-react";
 import type { RenderElementProps, RenderLeafProps } from "slate-react";
 import { withHistory } from "slate-history";
 import { Toolbar } from "./Toolbar";
+import { usePagination } from "./usePagination";
+import { withPagination } from "./plugins/withPagination";
 
 interface SlateEditorProps {
   initialContent?: string; // JSON string or plain text
@@ -15,6 +17,12 @@ interface SlateEditorProps {
 const Element = ({ attributes, children, element }: RenderElementProps) => {
   const style = { textAlign: (element as any).align };
   switch (element.type) {
+    case "page":
+      return (
+        <div className="slate-page" {...attributes}>
+          {children}
+        </div>
+      );
     case "block-quote":
       return (
         <blockquote style={style} {...attributes}>
@@ -90,17 +98,27 @@ const SlateEditor: React.FC<SlateEditorProps> = ({
     (props: RenderLeafProps) => <Leaf {...props} />,
     []
   );
-  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const editor = useMemo(
+    () => withPagination(withHistory(withReact(createEditor()))),
+    []
+  );
 
   const [value, setValue] = useState<Descendant[]>([
     {
-      type: "paragraph",
-      children: [{ text: "" }],
+      type: "page",
+      children: [
+        {
+          type: "paragraph",
+          children: [{ text: "" }],
+        },
+      ],
     },
   ]);
 
   // Ref to track current value for comparison to prevent focus loss
   const valueRef = React.useRef<Descendant[]>([]);
+
+  usePagination(editor);
 
   useEffect(() => {
     valueRef.current = value;

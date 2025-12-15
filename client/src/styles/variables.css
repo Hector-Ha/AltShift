@@ -8,6 +8,7 @@
   --text-primary: #1e293b;
   --text-secondary: #64748b;
   --bg-light: #f8fafc;
+  --bg-canvas: #e2e8f0; /* Darker background for editor canvas */
   --bg-white: #ffffff;
   --border-color: #e2e8f0;
 
