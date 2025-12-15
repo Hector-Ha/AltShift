@@ -1,0 +1,250 @@
+/* Editor Page Theme - Modern Blue SAAS */
+:root {
+  --primary-blue: #3b82f6;
+  --primary-blue-hover: #2563eb;
+  --bg-gray: #f1f5f9;
+  --bg-white: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+.editor-page {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-gray);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+
+/* Main Content Area */
+.editor-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Header */
+.editor-header {
+  height: 64px;
+  background-color: var(--bg-white);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between; /* Space beween Title and Save Btn */
+  align-items: center;
+  padding: 0 24px;
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
+}
+
+.editor-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.save-btn {
+  background-color: var(--primary-blue);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.save-btn:hover {
+  background-color: var(--primary-blue-hover);
+}
+
+/* Editor Canvas */
+.editor-canvas {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px 80px; /* Top, Horizontal, Bottom padding */
+}
+
+/* Slate Editor Wrapper (The "Paper") */
+.slate-editor-wrapper {
+  width: 100%;
+  max-width: 850px;
+  background-color: var(--bg-white);
+  min-height: 1100px; /* A4-ish height feels */
+  padding: 60px;
+  box-shadow: var(--shadow-md);
+  border-radius: 2px; /* Slight round, mostly paper sharp */
+  position: relative;
+}
+
+/* Toolbar */
+.slate-toolbar {
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-white); /* Or maybe slightly transparent/blur? */
+  padding: 12px 0;
+  border-bottom: 2px solid var(--bg-gray);
+  margin-bottom: 24px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+  z-index: 5;
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+  border: none;
+}
+
+.toolbar-btn:hover {
+  background-color: var(--bg-gray);
+  color: var(--text-primary);
+}
+
+.toolbar-btn.active {
+  background-color: #eff6ff;
+  color: var(--primary-blue);
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 20px;
+  background-color: var(--border-color);
+  margin: 0 8px;
+}
+
+/* Editable Content */
+.slate-editable {
+  outline: none;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.slate-editable h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+}
+
+.slate-editable h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.slate-editable p {
+  margin-bottom: 1em;
+}
+
+.slate-editable blockquote {
+  border-left: 3px solid var(--primary-blue);
+  padding-left: 16px;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin: 1.5em 0;
+}
+
+.slate-editable ul,
+.slate-editable ol {
+  padding-left: 24px;
+  margin-bottom: 1em;
+}
+
+.slate-editable li {
+  margin-bottom: 0.25em;
+}
+
+/* Sidebar (Right) */
+.editor-sidebar {
+  width: 280px;
+  background-color: var(--bg-white);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+}
+
+.sidebar-header {
+  height: 64px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sidebar-content {
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.active-user-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.active-user-item:hover {
+  background-color: var(--bg-gray);
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--primary-blue);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 2px white; /* Ring effect */
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.user-email {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}

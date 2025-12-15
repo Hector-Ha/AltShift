@@ -137,27 +137,19 @@ const SlateEditor: React.FC<SlateEditorProps> = ({
 
   return (
     <Slate editor={editor} initialValue={value} onChange={handleChange}>
-      <div
-        style={{
-          border: "1px solid #ddd",
-          borderRadius: "8px",
-          padding: "10px",
-          background: "white",
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-        }}
-      >
+      <div className="slate-editor-wrapper">
         {!readOnly && <Toolbar />}
-        <div style={{ flex: 1, overflowY: "auto" }}>
+        {/* WE keep flex:1 to fill the paper if needed */}
+        <div style={{ flex: 1 }}>
           <Editable
             renderElement={renderElement}
             renderLeaf={renderLeaf}
-            placeholder="Enter some rich text..."
+            placeholder="Type your document..."
             spellCheck
             autoFocus
             readOnly={readOnly}
-            style={{ minHeight: "300px", padding: "0 10px", outline: "none" }}
+            className="slate-editable"
+            style={{ minHeight: "600px" }}
           />
         </div>
       </div>

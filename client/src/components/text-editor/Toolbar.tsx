@@ -17,15 +17,10 @@ const Button = React.forwardRef<
   <span
     {...props}
     ref={ref}
-    style={{
-      cursor: "pointer",
-      color: reversed ? (active ? "white" : "#aaa") : active ? "black" : "#ccc",
-      padding: "5px",
-      margin: "0 5px",
-      display: "inline-block",
-      fontWeight: active ? "bold" : "normal",
-      ...((props as any).style || {}),
-    }}
+    className={className}
+    // We removed inline styles here to rely on CSS.
+    // If 'reversed' functionality is needed, add a class for it.
+    // For now 'slate-toolbar' implies light theme (not reversed).
   />
 ));
 
@@ -62,11 +57,7 @@ const BlockButton = ({
         toggleBlock(editor, format);
       }}
       title={title || format}
-      style={{
-        backgroundColor: active ? "#e2e8f0" : "transparent",
-        borderRadius: "4px",
-        padding: "4px 8px",
-      }}
+      className={`toolbar-btn ${active ? "active" : ""}`}
     >
       <Icon>{icon}</Icon>
     </Button>
@@ -94,11 +85,7 @@ const MarkButton = ({
         toggleMark(editor, format);
       }}
       title={title || format}
-      style={{
-        backgroundColor: active ? "#e2e8f0" : "transparent",
-        borderRadius: "4px",
-        padding: "4px 8px",
-      }}
+      className={`toolbar-btn ${active ? "active" : ""}`}
     >
       <Icon>{icon}</Icon>
     </Button>
@@ -107,29 +94,29 @@ const MarkButton = ({
 
 export const Toolbar = () => {
   return (
-    <div
-      style={{
-        borderBottom: "2px solid #eee",
-        padding: "10px 18px 10px",
-        marginBottom: "20px",
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "5px",
-        alignItems: "center",
-      }}
-    >
-      <MarkButton format="bold" icon="B" title="Bold" />
-      <MarkButton format="italic" icon="I" title="Italic" />
-      <MarkButton format="underline" icon="U" title="Underline" />
-      <MarkButton format="code" icon="<>" title="Code" />
-      <span
-        style={{ width: "1px", background: "#ccc", margin: "0 10px" }}
-      ></span>
-      <BlockButton format="heading-one" icon="H1" title="Heading 1" />
-      <BlockButton format="heading-two" icon="H2" title="Heading 2" />
-      <BlockButton format="block-quote" icon="“" title="Quote" />
-      <BlockButton format="numbered-list" icon="1." title="Numbered List" />
-      <BlockButton format="bulleted-list" icon="•" title="Bulleted List" />
+    <div className="slate-toolbar">
+      <MarkButton format="bold" icon="format_bold" title="Bold" />
+      <MarkButton format="italic" icon="format_italic" title="Italic" />
+      <MarkButton
+        format="underline"
+        icon="format_underlined"
+        title="Underline"
+      />
+      <MarkButton format="code" icon="code" title="Code" />
+      <span className="toolbar-separator"></span>
+      <BlockButton format="heading-one" icon="looks_one" title="Heading 1" />
+      <BlockButton format="heading-two" icon="looks_two" title="Heading 2" />
+      <BlockButton format="block-quote" icon="format_quote" title="Quote" />
+      <BlockButton
+        format="numbered-list"
+        icon="format_list_numbered"
+        title="Numbered List"
+      />
+      <BlockButton
+        format="bulleted-list"
+        icon="format_list_bulleted"
+        title="Bulleted List"
+      />
     </div>
   );
 };
