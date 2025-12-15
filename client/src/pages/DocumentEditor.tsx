@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@apollo/client/react";
 import { socket } from "../socket/socket";
 import SlateEditor from "../components/text-editor/SlateEditor";
 import Logo from "../components/Logo";
+import "../styles/editor.css";
 
 import { gql } from "../gql";
 import type {
