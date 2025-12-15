@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "../styles/Login.css";
 import { useMutation } from "@apollo/client/react";
 import { useNavigate } from "react-router-dom";
 import { gql } from "../gql";
@@ -87,24 +88,9 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        marginTop: "50px",
-      }}
-    >
+    <div className="login-container">
       <h1>{isRegister ? "Register" : "Login"}</h1>
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          width: "300px",
-        }}
-      >
+      <form onSubmit={handleSubmit} className="login-form">
         {isRegister && (
           <input
             type="text"
@@ -134,20 +120,14 @@ const Login: React.FC = () => {
         </button>
       </form>
       {loginError && (
-        <p style={{ color: "red" }}>Login Error: {loginError.message}</p>
+        <p className="error-message">Login Error: {loginError.message}</p>
       )}
       {regError && (
-        <p style={{ color: "red" }}>Register Error: {regError.message}</p>
+        <p className="error-message">Register Error: {regError.message}</p>
       )}
 
       <button
-        style={{
-          marginTop: "20px",
-          background: "none",
-          border: "none",
-          color: "blue",
-          cursor: "pointer",
-        }}
+        className="switch-auth-btn"
         onClick={() => setIsRegister(!isRegister)}
       >
         {isRegister

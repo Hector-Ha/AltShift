@@ -14,14 +14,7 @@ const Button = React.forwardRef<
     style?: React.CSSProperties;
   }
 >(({ className, active, reversed, ...props }, ref) => (
-  <span
-    {...props}
-    ref={ref}
-    className={className}
-    // We removed inline styles here to rely on CSS.
-    // If 'reversed' functionality is needed, add a class for it.
-    // For now 'slate-toolbar' implies light theme (not reversed).
-  />
+  <span {...props} ref={ref} className={className} />
 ));
 
 const Icon = React.forwardRef<
@@ -31,8 +24,7 @@ const Icon = React.forwardRef<
   <span
     {...props}
     ref={ref}
-    className={`material-icons ${className}`}
-    style={{ fontSize: "18px", verticalAlign: "text-bottom" }}
+    className={`material-icons ${className} toolbar-icon`}
   />
 ));
 

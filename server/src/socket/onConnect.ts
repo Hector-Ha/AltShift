@@ -31,6 +31,50 @@ export const ioOnConnect = (
       // Join User Room for personal notifications
       if (socket.data.user) {
         socket.join(`user:${socket.data.user._id.toString()}`);
+
+        // Sync initial active sessions (Active Now)
+        (async () => {
+          try {
+            const { DocumentModel } = await import("../models/MDocument.js");
+            const userId = socket.data.user._id;
+
+            // Find all docs where user is owner or collaborator
+            const docs = await DocumentModel.find({
+              $or: [{ owner: userId }, { collaborators: userId }],
+            }).select("_id title owner collaborators");
+
+            for (const doc of docs) {
+              const roomId = doc._id.toString();
+              const room = io.sockets.adapter.rooms.get(roomId);
+
+              if (room && room.size > 0) {
+                // Determine active users in this doc
+                const activeSockets = Array.from(room);
+
+                for (const clientId of activeSockets) {
+                  const s = io.sockets.sockets.get(clientId);
+                  const sUser = s?.data.user;
+
+                  // If it's a valid user and NOT the current user
+                  if (sUser && sUser._id.toString() !== userId.toString()) {
+                    socket.emit("doc-activity", {
+                      documentId: doc._id,
+                      title: doc.title,
+                      user: {
+                        id: sUser._id,
+                        email: sUser.email,
+                        firstName: sUser.personalInformation?.firstName,
+                      },
+                      status: "viewing",
+                    });
+                  }
+                }
+              }
+            }
+          } catch (err) {
+            console.error("Error syncing initial active sessions:", err);
+          }
+        })();
       }
 
       // Join Document Room
@@ -53,7 +97,6 @@ export const ioOnConnect = (
 
         // Notify global listeners (Collaborators on Dashboard)
         try {
-          // We need dynamic import if not top-level, or just use Mongoose
           const { DocumentModel } = await import("../models/MDocument.js");
           const doc = await DocumentModel.findById(documentId);
           if (doc) {
@@ -77,7 +120,6 @@ export const ioOnConnect = (
           console.error("Error broadcasting join activity", e);
         }
 
-        // ... existing presence logic ...
         const set = io.sockets.adapter.rooms.get(documentId);
         if (set) {
           const clients = Array.from(set);

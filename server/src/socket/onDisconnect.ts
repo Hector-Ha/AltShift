@@ -2,14 +2,43 @@ import { Socket, Server } from "socket.io";
 import { SOCKET_EVENTS } from "./events.js";
 import { DocumentModel } from "../models/MDocument.js";
 import { NotificationModel } from "../models/MNotification.js";
-import { NotificationType } from "../generated/graphql.js"; // or hardcode if needed
+import { NotificationType } from "../generated/graphql.js";
 import { Types } from "mongoose";
 
 export const onDisconnect = (socket: Socket, io: Server) => {
   socket.on(SOCKET_EVENTS.DISCONNECT, async () => {
     console.log(`Socket disconnected: ${socket.id}`);
 
-    // Check if user has made edits in this session
+    // Handle Active Presence (Active Now)
+    if (socket.data.documentID && socket.data.user) {
+      const docId = socket.data.documentID;
+      const user = socket.data.user;
+
+      try {
+        const document = await DocumentModel.findById(docId);
+        if (document) {
+          const collaborators = [document.owner, ...document.collaborators];
+          collaborators.forEach((collabId) => {
+            if (collabId.toString() !== user._id.toString()) {
+              io.to(`user:${collabId.toString()}`).emit("doc-activity", {
+                documentId: document._id,
+                title: document.title,
+                user: {
+                  id: user._id,
+                  email: user.email,
+                  firstName: user.personalInformation?.firstName,
+                },
+                status: "left",
+              });
+            }
+          });
+        }
+      } catch (e) {
+        console.error("Error broadcasting disconnect activity", e);
+      }
+    }
+
+    // Handle Unsaved Changes Notification
     if (
       socket.data.documentID &&
       socket.data.hasUnsavedChanges &&
@@ -38,7 +67,7 @@ export const onDisconnect = (socket: Socket, io: Server) => {
           const notifications = Array.from(recipients).map((recipientId) => ({
             recipient: new Types.ObjectId(recipientId),
             sender: user._id,
-            type: "DOCUMENT_UPDATE" as any, // Enum mapping might be tricky just casting for now
+            type: "DOCUMENT_UPDATE" as any,
             document: document._id,
             message: `${user.email} updated the document "${document.title}"`,
             read: false,

@@ -210,3 +210,36 @@
   background-color: white;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
+
+.filter-select {
+  flex: 1;
+}
+
+.doc-refresh-time {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.no-docs-message {
+  padding: 1rem;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.dashboard-content-block {
+  display: block !important;
+}
+
+.home-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.home-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+

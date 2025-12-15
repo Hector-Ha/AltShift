@@ -1,0 +1,25 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 300px;
+}
+
+.error-message {
+  color: red;
+}
+
+.switch-auth-btn {
+  margin-top: 20px;
+  background: none;
+  border: none;
+  color: blue;
+  cursor: pointer;
+}

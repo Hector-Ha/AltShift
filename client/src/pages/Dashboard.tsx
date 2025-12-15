@@ -60,7 +60,6 @@ const Dashboard: React.FC = () => {
 
   const [filter, setFilter] = useState("RECENTS");
   const [search, setSearch] = useState("");
-  /* const [aiPrompt, setAiPrompt] = useState(""); */
   const userId = localStorage.getItem("userId");
 
   const [createDocument] = useMutation<
@@ -87,7 +86,6 @@ const Dashboard: React.FC = () => {
     onCompleted: (data) => {
       console.log("AI Mutation completed:", data);
       refetch();
-      // setAiPrompt(""); // Removed as state is local to RichTextPrompt now
       if (data.createDocumentWithAI?.id) {
         navigate(`/doc/${data.createDocumentWithAI.id}`);
       }
@@ -157,10 +155,9 @@ const Dashboard: React.FC = () => {
           {/* Filter & Sort Row */}
           <div className="filter-row">
             <select
-              className="form-select"
+              className="form-select filter-select"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              style={{ flex: 1 }}
             >
               <option value="RECENTS">Recents</option>
               <option value="ALL">All</option>
@@ -195,39 +192,22 @@ const Dashboard: React.FC = () => {
                 (doc: GetDocumentsQuery["getDocuments"][0]) => (
                   <Link key={doc.id} to={`/doc/${doc.id}`} className="doc-item">
                     <div>{doc.title}</div>
-                    <div style={{ fontSize: "0.75rem", opacity: 0.7 }}>
+                    <div className="doc-refresh-time">
                       {new Date(doc.updatedAt).toLocaleDateString()}
                     </div>
                   </Link>
                 )
               )}
               {filteredDocuments?.length === 0 && (
-                <div
-                  style={{
-                    padding: "1rem",
-                    color: "#64748b",
-                    fontSize: "0.875rem",
-                  }}
-                >
-                  No documents found.
-                </div>
+                <div className="no-docs-message">No documents found.</div>
               )}
             </div>
           </section>
         </aside>
         {/* Right Content - Home View */}
-        <main className="dashboard-content" style={{ display: "block" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "2rem",
-            }}
-          >
-            <h2 style={{ fontSize: "1.5rem", fontWeight: 700, margin: 0 }}>
-              Home
-            </h2>
+        <main className="dashboard-content dashboard-content-block">
+          <div className="home-header-row">
+            <h2 className="home-title">Home</h2>
             <button
               className="btn btn-primary"
               onClick={() =>

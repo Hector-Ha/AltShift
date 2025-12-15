@@ -47,12 +47,37 @@
 }
 
 .editor-title {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #1e293b;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+.editor-title-input {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 4px 8px;
+  border-radius: 4px;
+  width: 300px;
+  transition: all 0.2s;
+}
+
+.editor-title-input:hover {
+  border-color: #cbd5e1;
+}
+
+.editor-title-input:focus {
+  border-color: #3b82f6;
+  outline: none;
+  background: white;
+}
 .save-btn {
   background-color: var(--primary-blue);
   color: white;
@@ -271,3 +296,37 @@
   font-size: 0.75rem;
   color: var(--text-secondary);
 }
+
+.back-btn-link {
+  margin-right: 1rem;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+}
+
+.back-icon {
+  font-size: 20px;
+  color: #64748b;
+}
+
+.active-users-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+
+.toolbar-icon {
+  font-size: 18px;
+  vertical-align: text-bottom;
+}
+
+.slate-editor-flex-container {
+  flex: 1;
+}
+
+.slate-editable-content {
+  min-height: 600px;
+}
+

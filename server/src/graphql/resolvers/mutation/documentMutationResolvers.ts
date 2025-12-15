@@ -118,13 +118,16 @@ const documentMutationResolvers: MutationResolvers = {
       // Simple title extraction
       let title = "AI Generated Document";
       const firstLine = content.split("\n")[0];
-      if (firstLine && firstLine.length < 60) {
-        title = firstLine.replace(/^[#\s]+/, "").trim();
+      if (firstLine && firstLine.length < 100) {
+        // Strip common markdown symbols: #, *, _, [, ]
+        title = firstLine
+          .replace(/^[\s#*_\->]+/, "")
+          .replace(/[*_\[\]]/g, "")
+          .trim();
       }
 
       // Convert Markdown to Slate JSON with Pagination
       const slateNodes = markdownToSlate(content);
-      // Pagination Wrapper: The editor expects top-level nodes to be 'page'
       const paginatedContent = [
         {
           type: "page",
@@ -162,17 +165,57 @@ const documentMutationResolvers: MutationResolvers = {
       (c) => c.toString() === context.user._id.toString()
     );
 
-    // Metadata updates: Only owner can update title/visibility/delete. Collaborators can update content?
-    // User request: "[ ] Update a document ... Metadata ... [1] Title [1] Content ... [ ] Document Status ... [1] Is Favorite"
-    // Assuming collaborators can edit content. Owner can edit everything.
+    if (input.title) {
+      if (!isOwner && !isCollaborator)
+        throw new Error("Not Authorized to update title");
+    }
 
-    if (input.title || input.visibility) {
-      if (!isOwner) throw new Error("Not Authorized to update metadata");
-      if (input.title) document.title = input.title;
-      if (input.visibility) {
-        document.visibility = input.visibility;
-        // Sync deprecated field
-        document.isPublic = input.visibility === "PUBLIC";
+    if (input.visibility) {
+      if (!isOwner) throw new Error("Not Authorized to update visibility");
+    }
+
+    // Capture old title for notification
+    const oldTitle = document.title;
+    let titleChanged = false;
+
+    if (input.title) {
+      if (document.title !== input.title) {
+        document.title = input.title;
+        titleChanged = true;
+      }
+    }
+
+    if (input.visibility) {
+      document.visibility = input.visibility;
+      // Sync deprecated field
+      document.isPublic = input.visibility === "PUBLIC";
+
+      // Handle switching to PRIVATE: Remove all collaborators and invitees
+      if (input.visibility === "PRIVATE") {
+        const removedCollaborators = [...document.collaborators];
+        const removedInvitations = [...document.invitations];
+
+        document.collaborators = [];
+        document.invitations = [];
+
+        // Notify removed users
+
+        const allRemoved = [
+          ...removedCollaborators,
+          ...removedInvitations,
+        ].filter((id) => id.toString() !== context.user._id.toString());
+
+        if (allRemoved.length > 0) {
+          const notifications = allRemoved.map((recipientId) => ({
+            recipient: recipientId,
+            sender: context.user._id,
+            type: NotificationType.DOCUMENT_UPDATE,
+            document: document._id,
+            message: `${context.user.email} made the document "${document.title}" private`,
+            read: false,
+          }));
+          await NotificationModel.insertMany(notifications);
+        }
       }
     }
 
@@ -204,8 +247,27 @@ const documentMutationResolvers: MutationResolvers = {
 
     const result = await document.save();
 
-    // Removed explicit notification on every save/update to favor session-based notifications (on disconnect).
-    // NOTIFICATION: Document Update handled by socket onDisconnect if changes occurred.
+    if (titleChanged) {
+      const recipients = [...document.collaborators, document.owner].filter(
+        (id) => id.toString() !== context.user._id.toString()
+      );
+      // Deduplicate just in case
+      const uniqueRecipients = [
+        ...new Set(recipients.map((id) => id.toString())),
+      ];
+
+      if (uniqueRecipients.length > 0) {
+        const notifications = uniqueRecipients.map((recipientId) => ({
+          recipient: new Types.ObjectId(recipientId),
+          sender: context.user._id,
+          type: NotificationType.DOCUMENT_UPDATE,
+          document: document._id,
+          message: `Document name has been changed from "${oldTitle}" to "${document.title}"`,
+          read: false,
+        }));
+        await NotificationModel.insertMany(notifications);
+      }
+    }
 
     return result;
   },
@@ -220,8 +282,6 @@ const documentMutationResolvers: MutationResolvers = {
     document.deletedAt = new Date();
     await document.save();
 
-    // NOTIFICATION: Document Delete
-    // Notify collaborators
     const recipients = document.collaborators.filter(
       (c) => c.toString() !== context.user._id.toString()
     );
@@ -280,9 +340,15 @@ const documentMutationResolvers: MutationResolvers = {
       return document;
 
     document.invitations.push(new Types.ObjectId(userID));
+
+    // If Private, switch to Shared because we are inviting someone
+    if (document.visibility === "PRIVATE") {
+      document.visibility = "SHARED";
+      document.isPublic = false;
+    }
+
     await document.save();
 
-    // NOTIFICATION: Document Invite
     await NotificationModel.create({
       recipient: new Types.ObjectId(userID),
       sender: context.user._id,
@@ -364,7 +430,6 @@ const documentMutationResolvers: MutationResolvers = {
     if (document.owner.toString() !== context.user._id.toString())
       throw new Error("Not Authorized");
 
-    // Make old owner a collaborator? Request says [3] Transfer ownership (current owner becomes collaborator)
     const oldOwner = document.owner;
     document.owner = new Types.ObjectId(input.newOwnerID);
 
@@ -372,14 +437,18 @@ const documentMutationResolvers: MutationResolvers = {
     if (!document.collaborators.includes(oldOwner)) {
       document.collaborators.push(oldOwner);
     }
-    // Remove new owner from collaborators if they were one
+
     document.collaborators = document.collaborators.filter(
       (id) => id.toString() !== input.newOwnerID
     );
 
+    // If Private, switching ownership while keeping old owner as collaborator implies Sharing
+    if (document.visibility === "PRIVATE") {
+      document.visibility = "SHARED";
+      document.isPublic = false;
+    }
+
     await document.save();
-    // In a real app, might update User models too (ownership arrays), but standard Mongoose relationships usually just store ref on one side or sync manually.
-    // The User type resolver probably queries based on owner field, so this might be enough.
 
     // NOTIFICATION: Ownership Transfer
     await NotificationModel.create({
@@ -408,7 +477,7 @@ const documentMutationResolvers: MutationResolvers = {
       visibility: "PRIVATE",
       collaborators: [],
       invitations: [],
-      versions: [], // Don't copy history? Usually fresh copy.
+      versions: [],
     });
 
     await newDoc.save();
@@ -431,7 +500,6 @@ const documentMutationResolvers: MutationResolvers = {
     const snapshot = {
       content: document.content,
       createdAt: new Date(),
-      // name: name // We didn't schema 'name' yet, just content/date.
     };
 
     document.versions.push(snapshot);
@@ -453,7 +521,6 @@ const documentMutationResolvers: MutationResolvers = {
     const document = await DocumentModel.findById(documentID);
     if (!document) throw new Error("Document not found");
 
-    // Owner only? Or collaborator? Reverting is destructive.
     if (document.owner.toString() !== context.user._id.toString())
       throw new Error("Not Authorized");
 
@@ -469,4 +536,3 @@ const documentMutationResolvers: MutationResolvers = {
 };
 
 export default documentMutationResolvers;
-// Force restart

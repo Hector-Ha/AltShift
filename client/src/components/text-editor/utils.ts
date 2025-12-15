@@ -20,7 +20,7 @@ export type ParagraphElement = {
     | "block-quote"
     | "list-item"
     | "heading-one"
-    | "heading-two"; // Grouping simple blocks for now to save space
+    | "heading-two";
   align?: string;
   children: CustomText[];
 };
@@ -41,7 +41,7 @@ export type PageElement = {
   children: (CustomElement | CustomText)[]; // Pages contain other blocks
 };
 
-// We need to break down CustomElement to allow for Pages that contain other Elements
+// Break down CustomElement to allow for Pages that contain other Elements
 export type CustomElement =
   | { type: "paragraph"; align?: string; children: CustomText[] }
   | { type: "heading-one"; align?: string; children: CustomText[] }

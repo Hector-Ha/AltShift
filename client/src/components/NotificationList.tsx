@@ -71,24 +71,24 @@ const NotificationList: React.FC = () => {
 
     const onDocActivity = (activity: any) => {
       console.log("Activity received", activity);
-      // Add to active sessions, avoid duplicates
       setActiveSessions((prev) => {
-        const exists = prev.find(
-          (s) =>
-            s.user.id === activity.user.id &&
-            s.documentId === activity.documentId
-        );
-        if (exists) return prev;
-        return [...prev, activity];
-      });
+        const isLeft = activity.status === "left";
+        const userId = activity.user.id;
+        const docId = activity.documentId;
 
-      // Remove after 10 seconds of silence? Or wait for "stop"?
-      // For now, let's just show it. Ideally we handle "leave" too.
-      // But for "Show them are working", this is a start.
-      // Since we don't emit "stop" except on disconnect...
-      setTimeout(() => {
-        setActiveSessions((prev) => prev.filter((s) => s !== activity));
-      }, 30000); // Clear after 30s as a fallback
+        if (isLeft) {
+          return prev.filter(
+            (s) => !(s.user.id === userId && s.documentId === docId)
+          );
+        } else {
+          // Add if not exists
+          const exists = prev.find(
+            (s) => s.user.id === userId && s.documentId === docId
+          );
+          if (exists) return prev;
+          return [...prev, activity];
+        }
+      });
     };
 
     socket.on("new-notification", onNewNotification);
@@ -120,153 +120,222 @@ const NotificationList: React.FC = () => {
     return true;
   });
 
-  return (
-    <div className="notification-list">
-      <div className="section-header">
-        <h3 className="section-title">New Updates</h3>
-        <div className="filter-dropdown-container">
-          <button
-            className="filter-btn"
-            onClick={() => setShowFilter(!showFilter)}
-          >
-            Filter
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-            </svg>
-          </button>
-          {showFilter && (
-            <div className="filter-menu">
-              <div
-                className={`filter-item ${filter === "all" ? "active" : ""}`}
-                onClick={() => {
-                  setFilter("all");
-                  setShowFilter(false);
-                }}
-              >
-                All
-              </div>
-              <div
-                className={`filter-item ${filter === "unread" ? "active" : ""}`}
-                onClick={() => {
-                  setFilter("unread");
-                  setShowFilter(false);
-                }}
-              >
-                Unread
-              </div>
-              <div
-                className={`filter-item ${filter === "read" ? "active" : ""}`}
-                onClick={() => {
-                  setFilter("read");
-                  setShowFilter(false);
-                }}
-              >
-                Read
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+  // Group active sessions by document
+  const groupedSessions = activeSessions.reduce((acc, session) => {
+    const docId = session.documentId;
+    if (!acc[docId]) {
+      acc[docId] = {
+        title: session.title,
+        users: [],
+      };
+    }
+    acc[docId].users.push(session.user);
+    return acc;
+  }, {} as Record<string, { title: string; users: any[] }>);
 
-      {activeSessions.length > 0 && (
-        <div className="active-sessions">
-          <h4>Active Now</h4>
-          <ul>
-            {activeSessions.map((session, i) => (
-              <li key={i} className="active-item">
-                <span className="active-user">
-                  {session.user.firstName || session.user.email}
-                </span>
-                <span className="active-action"> is viewing </span>
-                <span className="active-doc">{session.title}</span>
+  return (
+    <div className="notification-grid-container">
+      {/* "New Updates" Panel (5fr) */}
+      <div className="updates-panel">
+        <div className="section-header">
+          <h3 className="section-title">New Updates</h3>
+          <div className="filter-dropdown-container">
+            <button
+              className="filter-btn"
+              onClick={() => setShowFilter(!showFilter)}
+            >
+              Filter
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+              </svg>
+            </button>
+            {showFilter && (
+              <div className="filter-menu">
+                <div
+                  className={`filter-item ${filter === "all" ? "active" : ""}`}
+                  onClick={() => {
+                    setFilter("all");
+                    setShowFilter(false);
+                  }}
+                >
+                  All
+                </div>
+                <div
+                  className={`filter-item ${
+                    filter === "unread" ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setFilter("unread");
+                    setShowFilter(false);
+                  }}
+                >
+                  Unread
+                </div>
+                <div
+                  className={`filter-item ${filter === "read" ? "active" : ""}`}
+                  onClick={() => {
+                    setFilter("read");
+                    setShowFilter(false);
+                  }}
+                >
+                  Read
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {filteredNotifications.length === 0 ? (
+          <p className="no-notifications">
+            No {filter !== "all" ? filter : "new"} updates found.
+          </p>
+        ) : (
+          <ul className="notification-items">
+            {filteredNotifications.map((notif) => (
+              <li
+                key={notif.id}
+                className={`notification-item ${
+                  notif.read ? "read" : "unread"
+                }`}
+                onClick={() => !notif.read && handleMarkAsRead(notif.id)}
+              >
+                <div className="notif-header">
+                  <span className="notif-sender">
+                    {notif.sender.personalInformation.firstName ||
+                      notif.sender.email}
+                  </span>
+                  <span className="notif-time">
+                    {formatDistanceToNow(new Date(notif.createdAt), {
+                      addSuffix: true,
+                    })}
+                  </span>
+                </div>
+                <p className="notif-message">{notif.message}</p>
+                {!notif.read && <span className="unread-dot">●</span>}
               </li>
             ))}
           </ul>
-        </div>
-      )}
+        )}
+      </div>
 
-      {filteredNotifications.length === 0 ? (
-        <p className="no-notifications">
-          No {filter !== "all" ? filter : "new"} updates found.
-        </p>
-      ) : (
-        <ul className="notification-items">
-          {filteredNotifications.map((notif) => (
-            <li
-              key={notif.id}
-              className={`notification-item ${notif.read ? "read" : "unread"}`}
-              onClick={() => !notif.read && handleMarkAsRead(notif.id)}
-            >
-              <div className="notif-header">
-                <span className="notif-sender">
-                  {notif.sender.personalInformation.firstName ||
-                    notif.sender.email}
-                </span>
-                <span className="notif-time">
-                  {formatDistanceToNow(new Date(notif.createdAt), {
-                    addSuffix: true,
-                  })}
-                </span>
-              </div>
-              <p className="notif-message">{notif.message}</p>
-              {!notif.read && <span className="unread-dot">●</span>}
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* "Active Now" Panel (2fr) */}
+      <div className="active-panel">
+        {Object.keys(groupedSessions).length > 0 ? (
+          <div className="active-sessions-content">
+            <h4>Active Now</h4>
+            {Object.entries(groupedSessions).map(
+              ([docId, data]: [string, any]) => {
+                const users = data.users;
+                const userNames = users.map(
+                  (u: any) => u.firstName || u.email.split("@")[0]
+                );
 
-      {/* Basic Inline Styles for quick iteration, move to CSS later */}
+                let message = "";
+                if (userNames.length <= 3) {
+                  message = userNames.join(", ");
+                } else {
+                  const firstThree = userNames.slice(0, 3).join(", ");
+                  const count = userNames.length - 3;
+                  message = `${firstThree} and ${count} other people`;
+                }
+
+                return (
+                  <div key={docId} className="active-session-block">
+                    <span className="active-user-names">{message}</span>
+                    <span className="active-action"> is viewing </span>
+                    <span className="active-doc-title">{data.title}</span>
+                  </div>
+                );
+              }
+            )}
+          </div>
+        ) : (
+          <div className="no-active-sessions">
+            <h4>Active Now</h4>
+            <p className="no-activity-msg">No one is currently active.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Inline Styles */}
       <style>{`
-        .active-sessions {
+        .notification-grid-container {
+            display: grid;
+            grid-template-columns: 5fr 2fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            align-items: start;
+        }
+
+        .updates-panel {
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            padding: 1rem;
+            min-width: 0;
+        }
+
+        .active-panel {
             background: #ecfdf5;
-            border: 1px solid #a7f3d0;
-            padding: 0.5rem;
-            margin-bottom: 1rem;
-            border-radius: 6px;
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            padding: 1rem;
+            min-width: 0;
+            height: fit-content;
         }
-        .active-sessions h4 {
-            margin: 0 0 0.5rem 0;
+        
+        /* Inner content for Active */
+        .active-sessions-content h4, .no-active-sessions h4 {
+            margin: 0 0 1rem 0;
+            font-size: 0.9rem;
+            color: #111827;
+            font-weight: 600;
+            border-bottom: 1px solid #f3f4f6;
+            padding-bottom: 0.5rem;
+        }
+
+        .active-session-block {
             font-size: 0.85rem;
-            color: #065f46;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            color: #064e3b;
+            background: #ecfdf5; /* Green block inside white panel */
+            border: 1px solid #a7f3d0;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            border-radius: 6px;
+            word-wrap: break-word;
         }
-        .active-sessions ul {
-            list-style: none;
-            padding: 0;
+        
+        .active-session-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .active-user-names { font-weight: bold; }
+        .active-doc-title { font-style: italic; }
+
+        .no-activity-msg {
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-style: italic;
             margin: 0;
         }
-        .active-item {
-            font-size: 0.9rem;
-            color: #064e3b;
-            margin-bottom: 0.25rem;
-        }
-        .active-user { font-weight: bold; }
-        .active-doc { font-style: italic; }
 
-        .notification-list {
-          margin-top: 2rem;
-          padding: 1rem;
-          background: #f9fafb;
-          border-radius: 8px;
-          border: 1px solid #e5e7eb;
-        }
-        /* ... rest of styles ... */
+        /* Updates Panel Styles */
         .notification-items {
           list-style: none;
           padding: 0;
           margin: 0;
-          max-height: 300px;
+          max-height: 400px;
           overflow-y: auto;
         }
         .notification-item {
@@ -318,7 +387,6 @@ const NotificationList: React.FC = () => {
         }
         .section-title {
           margin: 0; 
-          /* Inherit or keep previous margins if they were set globally, user said maintain design */
         }
         .filter-dropdown-container {
           position: relative;
