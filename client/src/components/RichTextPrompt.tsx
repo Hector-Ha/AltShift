@@ -2,6 +2,7 @@ import React, { useMemo, useState, useCallback } from "react";
 import { createEditor, type Descendant, Node } from "slate";
 import { Slate, Editable, withReact } from "slate-react";
 import { withHistory } from "slate-history";
+import "../styles/RichTextPrompt.css";
 
 interface Attachment {
   name: string;
@@ -101,16 +102,10 @@ const RichTextPrompt: React.FC<RichTextPromptProps> = ({
       >
         <div className="editor-wrapper">
           <Editable
-            className="slate-editable"
+            className="slate-editable rich-text-editable-content"
             placeholder={placeholder || "Type here..."}
             onKeyDown={handleKeyDown}
             readOnly={loading}
-            style={{
-              minHeight: "80px",
-              padding: "12px",
-              outline: "none",
-              color: "#334155",
-            }}
           />
           {attachments.length > 0 && (
             <div className="attachments-list">
@@ -134,7 +129,7 @@ const RichTextPrompt: React.FC<RichTextPromptProps> = ({
           <input
             type="file"
             ref={fileInputRef}
-            style={{ display: "none" }}
+            className="file-input-hidden"
             multiple
             accept=".pdf,.docx,.txt,.md"
             onChange={handleFileSelect}
@@ -188,102 +183,6 @@ const RichTextPrompt: React.FC<RichTextPromptProps> = ({
           </button>
         </div>
       </Slate>
-
-      <style>{`
-        .rich-text-prompt-container {
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            background: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-        .rich-text-prompt-container:focus-within {
-            border-color: #3b82f6;
-            box-shadow: 0 4px 12px -1px rgba(59, 130, 246, 0.15);
-        }
-        .editor-wrapper {
-            flex: 1;
-            cursor: text;
-        }
-        .attachments-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 0 12px 12px 12px;
-        }
-        .attachment-chip {
-            background: #f1f5f9;
-            border-radius: 6px;
-            padding: 4px 8px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: #475569;
-        }
-        .remove-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #94a3b8;
-            font-size: 14px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-        }
-        .remove-btn:hover {
-            color: #ef4444;
-        }
-        .slate-editable:empty:before {
-            content: attr(placeholder);
-            color: #94a3b8;
-            pointer-events: none;
-            display: block; /* For Firefox */
-        }
-        
-        .prompt-actions {
-            display: flex;
-            justify-content: flex-end;
-            padding: 8px 12px;
-            gap: 8px;
-            border-top: 1px solid #f1f5f9;
-            background: #f8fafc;
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-        }
-        .action-btn {
-            background: transparent;
-            border: none;
-            padding: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-            color: #64748b;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .action-btn:hover:not(:disabled) {
-            background: #e2e8f0;
-            color: #334155;
-        }
-        .send-btn {
-            background: #3b82f6;
-            color: white;
-        }
-        .send-btn:hover:not(:disabled) {
-            background: #2563eb;
-            color: white;
-        }
-        .send-btn:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-      `}</style>
     </div>
   );
 };

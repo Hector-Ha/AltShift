@@ -19,7 +19,7 @@ async function seedNotifications() {
   console.log("Connected to MongoDB");
 
   try {
-    // 1. Find or Create Recipient (user1@gmail.com)
+    // Find or Create Recipient
     let recipient = await UserModel.findOne({ email: "user1@gmail.com" });
     if (!recipient) {
       console.log("user1@gmail.com not found, creating dummy user...");
@@ -31,7 +31,7 @@ async function seedNotifications() {
     }
     console.log("Recipient found:", recipient.email);
 
-    // 2. Find or Create Check Senders
+    // Find or Create Check Senders
     let sender1 = await UserModel.findOne({ email: "alice@gmail.com" });
     if (!sender1) {
       sender1 = await UserModel.create({
@@ -50,7 +50,7 @@ async function seedNotifications() {
       });
     }
 
-    // 3. Create a dummy document
+    // Create a document
     const doc = await DocumentModel.create({
       title: "Project Alpha Roadmap",
       content: "Draft content...",
@@ -59,7 +59,7 @@ async function seedNotifications() {
       collaborators: [recipient._id],
     });
 
-    // 4. Create Notifications
+    // Create Notifications
     const notifications = [
       {
         recipient: recipient._id,

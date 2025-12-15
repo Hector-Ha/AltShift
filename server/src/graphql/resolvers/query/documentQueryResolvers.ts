@@ -13,8 +13,18 @@ const documentQueryResolvers: QueryResolvers = {
     const isCollaborator = document.collaborators?.includes(context.user?._id);
     const isPublic = document.visibility === "PUBLIC";
 
+    if (document.visibility === "PRIVATE" && !isOwner) {
+      throw new Error("Access Denied: Document is Private");
+    }
+
     if (!isPublic && !isOwner && !isCollaborator) {
       throw new Error("Not Authorized");
+    }
+
+    // Auto-join if Public and Authenticated
+    if (isPublic && context.user && !isOwner && !isCollaborator) {
+      document.collaborators.push(context.user._id);
+      await document.save();
     }
 
     return document;
@@ -25,7 +35,7 @@ const documentQueryResolvers: QueryResolvers = {
 
     const criteria: FilterQuery<IDocument> = { deletedAt: undefined };
 
-    // 1. Accessibility
+    // Accessibility
     const accessConditions = [
       { owner: context.user._id },
       { collaborators: context.user._id },
@@ -37,7 +47,7 @@ const documentQueryResolvers: QueryResolvers = {
       criteria.collaborators = context.user._id;
     else criteria.$or = accessConditions;
 
-    // 2. Status
+    // Status
     if (filter?.status) criteria.visibility = filter.status;
     if (filter?.isFavorite) {
       // This is hard because favorite is on User model.
@@ -48,7 +58,7 @@ const documentQueryResolvers: QueryResolvers = {
       }
     }
 
-    // 3. Search
+    // Search
     if (filter?.search) {
       const searchRegex = { $regex: filter.search, $options: "i" };
       const searchCriteria = {

@@ -5,6 +5,7 @@ import { socket } from "../socket/socket";
 import SlateEditor from "../components/text-editor/SlateEditor";
 import Logo from "../components/Logo";
 import "../styles/editor.css";
+import ShareDropdown from "../components/ShareDropdown";
 
 import { gql } from "../gql";
 import type {
@@ -22,6 +23,10 @@ const GET_DOCUMENT = gql(`
       id
       title
       content
+      visibility
+      owner {
+        id
+      }
     }
   }
 `);
@@ -39,6 +44,7 @@ const DocumentEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [content, setContent] = useState("");
+  const [title, setTitle] = useState("Untitled Document");
   const [activeUsers, setActiveUsers] = useState<any[]>([]);
   const isLocalUpdate = useRef(false);
 
@@ -50,8 +56,13 @@ const DocumentEditor: React.FC = () => {
   });
 
   useEffect(() => {
-    if (data?.getDocumentByID?.content) {
-      setContent(data.getDocumentByID.content ?? "");
+    if (data?.getDocumentByID) {
+      if (data.getDocumentByID.content) {
+        setContent(data.getDocumentByID.content ?? "");
+      }
+      if (data.getDocumentByID.title) {
+        setTitle(data.getDocumentByID.title);
+      }
     }
   }, [data]);
 
@@ -59,6 +70,23 @@ const DocumentEditor: React.FC = () => {
     UpdateDocumentMutation,
     UpdateDocumentMutationVariables
   >(UPDATE_DOCUMENT);
+
+  const handleTitleBlur = () => {
+    if (data?.getDocumentByID && title !== data.getDocumentByID.title) {
+      saveDocument({
+        variables: {
+          id: id!,
+          input: { title },
+        },
+      });
+    }
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.currentTarget.blur(); // Triggers onBlur
+    }
+  };
 
   // Socket Connection
   useEffect(() => {
@@ -145,27 +173,30 @@ const DocumentEditor: React.FC = () => {
       {/* Main Content Area */}
       <div className="editor-main">
         <div className="editor-header">
-          <Link
-            to="/dashboard"
-            style={{
-              marginRight: "1rem",
-              textDecoration: "none",
-              color: "inherit",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <span
-              className="material-icons"
-              style={{ fontSize: "20px", color: "#64748b" }}
-            >
-              arrow_back
-            </span>
+          <Link to="/dashboard" className="back-btn-link">
+            <span className="material-icons back-icon">arrow_back</span>
           </Link>
-          <h2 className="editor-title">{data?.getDocumentByID?.title}</h2>
+          <input
+            type="text"
+            className="editor-title-input"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onBlur={handleTitleBlur}
+            onKeyDown={handleTitleKeyDown}
+            placeholder="Untitled Document"
+          />
           <button className="save-btn" onClick={handleSave}>
             Save
           </button>
+          {data?.getDocumentByID && (
+            <ShareDropdown
+              documentId={id!}
+              currentVisibility={data.getDocumentByID.visibility as any}
+              isOwner={
+                data.getDocumentByID.owner.id === localStorage.getItem("userId")
+              }
+            />
+          )}
         </div>
 
         <div className="editor-canvas">
@@ -177,7 +208,7 @@ const DocumentEditor: React.FC = () => {
       <div className="editor-sidebar">
         <div className="sidebar-header">Active Users</div>
         <div className="sidebar-content">
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          <ul className="active-users-list">
             {activeUsers.map((u) => (
               <li key={u.socketId} className="active-user-item">
                 <div

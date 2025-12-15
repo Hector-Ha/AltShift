@@ -88,12 +88,6 @@ export const markdownToSlate = (markdown: string): SlateNode[] => {
 const parseInline = (text: string): SlateNode[] => {
   const children: SlateNode[] = [];
 
-  // Split by bold (** or __)
-  // This is a very basic parser, a full one would be recursive.
-  // For now, let's just handle simple text to avoid breaking.
-  // We can improve this if needed, but for "AI" raw text, simple paragraphs are often enough.
-
-  // Let's implement basic bold parsing: **bold**
   const parts = text.split(/(\*\*.*?\*\*)/g);
 
   parts.forEach((part) => {

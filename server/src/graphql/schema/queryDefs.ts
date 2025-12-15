@@ -17,7 +17,6 @@ const queryDefs = gql`
     getUserByID(id: ID!): User
     # getMe: User
 
-    # Simple list for now, maybe add search later
     getAllUsers: [User!]!
   }
 `;

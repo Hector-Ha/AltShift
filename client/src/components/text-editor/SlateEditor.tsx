@@ -157,8 +157,8 @@ const SlateEditor: React.FC<SlateEditorProps> = ({
     <Slate editor={editor} initialValue={value} onChange={handleChange}>
       <div className="slate-editor-wrapper">
         {!readOnly && <Toolbar />}
-        {/* WE keep flex:1 to fill the paper if needed */}
-        <div style={{ flex: 1 }}>
+        {/* Keep flex:1 to fill the paper if needed */}
+        <div className="slate-editor-flex-container">
           <Editable
             renderElement={renderElement}
             renderLeaf={renderLeaf}
@@ -166,8 +166,7 @@ const SlateEditor: React.FC<SlateEditorProps> = ({
             spellCheck
             autoFocus
             readOnly={readOnly}
-            className="slate-editable"
-            style={{ minHeight: "600px" }}
+            className="slate-editable slate-editable-content"
           />
         </div>
       </div>
