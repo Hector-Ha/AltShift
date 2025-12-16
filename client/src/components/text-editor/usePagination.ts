@@ -21,7 +21,6 @@ const normalizePagination = (editor: Editor) => {
   // Limit passes to prevent infinite loops in case of stabilization issues.
   let contentMoved = true;
   let passes = 0;
-  const HEADER_HEIGHT = 0; // If any internal headers exist
 
   // Run this if find the DOM nodes.
   if (!ReactEditor.isFocused(editor) && editor.children.length === 0) return;

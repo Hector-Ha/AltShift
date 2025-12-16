@@ -11,6 +11,8 @@ export type CustomText = {
   italic?: boolean;
   underline?: boolean;
   code?: boolean;
+  color?: string;
+  backgroundColor?: string;
   [key: string]: unknown;
 };
 
@@ -46,11 +48,31 @@ export type CustomElement =
   | { type: "paragraph"; align?: string; children: CustomText[] }
   | { type: "heading-one"; align?: string; children: CustomText[] }
   | { type: "heading-two"; align?: string; children: CustomText[] }
+  | { type: "heading-three"; align?: string; children: CustomText[] }
+  | { type: "heading-four"; align?: string; children: CustomText[] }
+  | { type: "heading-five"; align?: string; children: CustomText[] }
+  | { type: "heading-six"; align?: string; children: CustomText[] }
   | { type: "block-quote"; align?: string; children: CustomText[] }
   | { type: "list-item"; children: CustomText[] }
   | { type: "bulleted-list"; align?: string; children: CustomElement[] }
   | { type: "numbered-list"; align?: string; children: CustomElement[] }
+  | { type: "image"; url: string; children: CustomText[] }
+  | { type: "video"; url: string; children: CustomText[] }
+  | { type: "link"; url: string; children: CustomText[] }
+  | { type: "table"; children: TableRowElement[] }
+  | { type: "table-row"; children: TableCellElement[] }
+  | { type: "table-cell"; children: CustomText[] }
   | PageElement;
+
+export type TableRowElement = {
+  type: "table-row";
+  children: TableCellElement[];
+};
+
+export type TableCellElement = {
+  type: "table-cell";
+  children: CustomText[];
+};
 
 declare module "slate" {
   interface CustomTypes {
@@ -119,4 +141,14 @@ export const toggleBlock = (editor: Editor, format: string) => {
     const block = { type: format, children: [] } as any;
     Transforms.wrapNodes(editor, block);
   }
+};
+
+export const toggleAlign = (editor: Editor, align: string) => {
+  const isActive = isBlockActive(editor, align, "align");
+
+  Transforms.setNodes(
+    editor,
+    { align: isActive ? undefined : align } as Partial<CustomElement>,
+    { match: (n) => SlateElement.isElement(n) && Editor.isBlock(editor, n) }
+  );
 };

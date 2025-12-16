@@ -79,7 +79,6 @@ const RichTextPrompt: React.FC<RichTextPromptProps> = ({
 
     onSubmit(text, attachments);
 
-    // Reset
     editor.children = [{ type: "paragraph", children: [{ text: "" }] }];
     editor.onChange();
     setValue([{ type: "paragraph", children: [{ text: "" }] }]);

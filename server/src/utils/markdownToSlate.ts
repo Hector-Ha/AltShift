@@ -1,6 +1,6 @@
 interface SlateNode {
   type?: string;
-  children: SlateNode[];
+  children?: SlateNode[];
   text?: string;
   [key: string]: any;
 }
@@ -49,7 +49,7 @@ export const markdownToSlate = (markdown: string): SlateNode[] => {
         nodes.push(currentList);
       }
 
-      currentList.children.push({
+      currentList.children!.push({
         type: "list-item",
         children: [{ text }],
       });
@@ -64,7 +64,7 @@ export const markdownToSlate = (markdown: string): SlateNode[] => {
         nodes.push(currentList);
       }
 
-      currentList.children.push({
+      currentList.children!.push({
         type: "list-item",
         children: [{ text }],
       });
@@ -84,7 +84,6 @@ export const markdownToSlate = (markdown: string): SlateNode[] => {
   return nodes;
 };
 
-// Simple inline parser for bold and italic
 const parseInline = (text: string): SlateNode[] => {
   const children: SlateNode[] = [];
 

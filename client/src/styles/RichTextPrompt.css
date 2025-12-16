@@ -7,6 +7,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  max-height: 25vh;
+  min-width: 0; /* Prevent flex overflow */
 }
 
 .rich-text-prompt-container:focus-within {
@@ -17,6 +19,8 @@
 .editor-wrapper {
   flex: 1;
   cursor: text;
+  overflow-y: auto;
+  min-width: 0; /* Prevent flex overflow */
 }
 
 .attachments-list {
@@ -110,6 +114,14 @@
   padding: 12px;
   outline: none;
   color: #334155;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  width: 100%;
+  /* Override editor.css .slate-editable styles */
+  display: block !important;
+  align-items: initial !important;
+  text-align: left !important;
+  width: 100% !important;
 }
 
 .file-input-hidden {
