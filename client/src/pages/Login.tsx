@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import "../styles/Login.css";
+import "../styles/NewLogin.css";
 import { useMutation } from "@apollo/client/react";
 import { useNavigate } from "react-router-dom";
 import { gql } from "../gql";
+import Logo from "../components/Logo";
 import type {
   LoginMutation,
   LoginMutationVariables,
@@ -87,53 +88,102 @@ const Login: React.FC = () => {
     }
   };
 
+  const toggleMode = () => {
+    setIsRegister(!isRegister);
+    // Clear errors or reset form state if needed
+  };
+
   return (
-    <div className="login-container">
-      <h1>{isRegister ? "Register" : "Login"}</h1>
-      <form onSubmit={handleSubmit} className="login-form">
-        {isRegister && (
-          <input
-            type="text"
-            placeholder="First Name"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            required
-          />
-        )}
+    <div className="login-page">
+      {/* Left Side - Brand */}
+      <div className="login-brand-section">
+        <div className="brand-header">
+          <Logo />
+          <span>AltShift</span>
+        </div>
+        <div className="brand-content">
+          <blockquote className="brand-quote">
+            "This document editor has completely transformed how our team
+            collaborates. It's fast, intuitive, and beautiful."
+          </blockquote>
+          <div className="brand-author">Sofia Davis, Product Designer</div>
+        </div>
+      </div>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit" disabled={loginLoading || regLoading}>
-          {isRegister ? "Sign Up" : "Sign In"}
-        </button>
-      </form>
-      {loginError && (
-        <p className="error-message">Login Error: {loginError.message}</p>
-      )}
-      {regError && (
-        <p className="error-message">Register Error: {regError.message}</p>
-      )}
+      {/* Right Side - Form */}
+      <div className="login-form-section">
+        <div className="login-form-container">
+          <div className="form-header">
+            {/* Mobile Logo - Visible only in single column if we wanted, but CSS hides brand section. 
+                We can add a top logo for mobile here if needed. */}
+            <h1>{isRegister ? "Create an account" : "Welcome back"}</h1>
+            <p>
+              {isRegister
+                ? "Enter your details below to create your account"
+                : "Enter your email below to login to your account"}
+            </p>
+          </div>
 
-      <button
-        className="switch-auth-btn"
-        onClick={() => setIsRegister(!isRegister)}
-      >
-        {isRegister
-          ? "Already have an account? Login"
-          : "Need an account? Register"}
-      </button>
+          <form onSubmit={handleSubmit} className="auth-form">
+            {isRegister && (
+              <div className="form-group">
+                <input
+                  className="form-input"
+                  type="text"
+                  placeholder="First Name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+
+            <div className="form-group">
+              <input
+                className="form-input"
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <input
+                className="form-input"
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="submit-btn"
+              disabled={loginLoading || regLoading}
+            >
+              {isRegister ? "Sign Up" : "Sign In"}
+            </button>
+          </form>
+
+          {(loginError || regError) && (
+            <div className="error-message">
+              {loginError && <p>Login Error: {loginError.message}</p>}
+              {regError && <p>Register Error: {regError.message}</p>}
+            </div>
+          )}
+
+          <div className="auth-footer">
+            {isRegister ? "Already have an account?" : "Don't have an account?"}
+            <button className="switch-auth-btn" onClick={toggleMode}>
+              {isRegister ? "Login" : "Register"}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

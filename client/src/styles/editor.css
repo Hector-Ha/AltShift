@@ -1,16 +1,21 @@
-/* Editor Page Theme - Modern Blue SAAS */
+/* Editor Page Theme - Modern Indigo SAAS */
 :root {
-  --primary-blue: #3b82f6;
-  --primary-blue-hover: #2563eb;
-  --bg-gray: #f1f5f9;
+  /* Matching Dashboard/Login Indigo Palette */
+  --primary-blue: #4f46e5;
+  --primary-blue-hover: #4338ca;
+  --bg-gray: #f8fafc; /* Matches dashboard-layout bg */
   --bg-white: #ffffff;
+  --bg-canvas: #eef2f6; /* Slightly darker than bg-gray for contrast with page */
   --text-primary: #1e293b;
   --text-secondary: #64748b;
   --border-color: #e2e8f0;
+
+  /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
     0 4px 6px -4px rgb(0 0 0 / 0.1);
+
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
 }
 
@@ -39,55 +44,82 @@
   background-color: var(--bg-white);
   border-bottom: 1px solid var(--border-color);
   display: flex;
-  justify-content: space-between; /* Space beween Title and Save Btn */
+  justify-content: space-between;
   align-items: center;
   padding: 0 24px;
-  box-shadow: var(--shadow-sm);
   z-index: 10;
 }
 
-.editor-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.editor-title-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
 }
 
 .editor-title-input {
-  font-size: 1.25rem;
+  font-size: 1.125rem; /* 18px */
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
   margin: 0;
   border: 1px solid transparent;
   background: transparent;
-  padding: 4px 8px;
-  border-radius: 4px;
-  width: 300px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  width: 100%;
+  max-width: 400px;
   transition: all 0.2s;
 }
 
 .editor-title-input:hover {
   border-color: #cbd5e1;
+  background-color: #f8fafc;
 }
 
 .editor-title-input:focus {
-  border-color: #3b82f6;
   outline: none;
-  background: white;
+  border-color: var(--primary-blue);
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); /* Matching focus ring */
 }
+
+/* Back Button */
+.back-btn-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  background: transparent;
+}
+
+.back-btn-link:hover {
+  background-color: #f1f5f9;
+  color: var(--text-primary);
+}
+
+.back-icon {
+  font-size: 20px;
+}
+
+/* Save Button - Matching .btn-primary */
 .save-btn {
   background-color: var(--primary-blue);
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 0.625rem 1rem;
   border-radius: 6px;
   font-weight: 500;
+  font-size: 0.875rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
   box-shadow: var(--shadow-sm);
+  display: inline-flex;
+  align-items: center;
 }
 
 .save-btn:hover {
@@ -100,57 +132,67 @@
   overflow-y: auto;
   display: flex;
   justify-content: center;
-  padding: 40px 20px 80px; /* Top, Horizontal, Bottom padding */
-  background-color: var(--bg-canvas); /* Darker background */
+  padding: 40px 20px 80px;
+  background-color: var(--bg-canvas);
 }
 
 /* Slate Editor Wrapper (The "Desk") */
 .slate-editor-wrapper {
   width: 100%;
-  max-width: 100%; /* Full width to hold pages */
-  background-color: transparent; /* Wrapper is now just a container */
+  max-width: 100%;
+  background-color: transparent;
   min-height: 100%;
-  padding: 40px 0; /* Vertical padding for the desk */
-  box-shadow: none; /* Shadow moves to the page */
+  padding: 40px 0;
+  box-shadow: none;
   border-radius: 0;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px; /* Space between pages */
+  /* gap removed - applied to .slate-editable instead */
 }
 
 /* Individual Page */
 .slate-page {
   width: 794px; /* A4 width */
-  min-height: 1123px; /* Allow growth if JS fails, but we want fixed for paging */
+  min-height: 1123px;
   height: 1123px;
   background-color: var(--bg-white);
-  padding: 96px; /* A4 standard margins */
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04); /* Stronger shadow */
+  padding: 96px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Softer shadow */
   border: 1px solid var(--border-color);
   position: relative;
-  overflow: hidden; /* Hide overflow until pagination moves it */
-  box-sizing: border-box; /* Important for accurate height calculations */
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Toolbar */
 .slate-toolbar {
   position: fixed;
-  bottom: 40px;
-  left: 50%;
+  top: auto;
+  bottom: 50px;
+  left: 40%;
   transform: translateX(-50%);
   background-color: var(--bg-white);
   box-shadow: var(--shadow-lg);
-  border-radius: 50px;
-  padding: 10px 24px;
+  border-radius: 6px;
+  padding: 8px 16px;
   display: flex;
-  gap: 4px;
+  gap: 8px; /* Space between groups */
   align-items: center;
-  flex-wrap: wrap;
   z-index: 100;
-  border: 1px solid var(--border-color); /* Added border for better visibility */
+  border: 1px solid var(--border-color);
+  max-width: 90vw;
+  flex-wrap: nowrap; /* Try to keep it on one line if possible */
+  height: fit-content;
+}
+
+/* Toolbar Groups */
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .toolbar-btn {
@@ -159,36 +201,103 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 50%; /* Rounded buttons match the rounded bar */
+  border-radius: 6px; /* Slightly rounded squares inside the pill */
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s;
   background: transparent;
   border: none;
+  position: relative;
 }
 
 .toolbar-btn:hover {
-  background-color: var(--bg-gray);
+  background-color: #f1f5f9;
   color: var(--text-primary);
 }
 
-.toolbar-btn.active {
-  background-color: var(--primary-blue); /* Solid blue active state */
-  color: white;
+.toolbar-btn.active,
+.toolbar-btn.open {
+  background-color: #e0e7ff; /* Light Indigo background */
+  color: var(--primary-blue);
 }
 
+/* Icons */
+.toolbar-icon {
+  font-size: 20px;
+  vertical-align: middle;
+}
+
+.dropdown-arrow {
+  font-size: 16px;
+  margin-left: -4px;
+  opacity: 0.7;
+}
+
+/* Dropdowns */
+.toolbar-dropdown-container {
+  position: relative;
+}
+
+.toolbar-dropdown-menu {
+  position: absolute;
+  bottom: 100%; /* Above the toolbar */
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 12px; /* Space above toolbar */
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  padding: 6px;
+  display: flex;
+  gap: 4px;
+  height: fit-content;
+  /* For horizontal toolbar-like submenus (like Insert) */
+  flex-direction: row;
+  white-space: nowrap;
+
+  animation: slideUpFade 0.15s ease-out;
+}
+
+.toolbar-dropdown-menu .toolbar-btn {
+  width: 32px;
+  height: 32px;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Separator */
 .toolbar-separator {
   width: 1px;
   height: 20px;
   background-color: var(--border-color);
-  margin: 0 8px;
+  margin: 0 4px;
+}
+
+/* Color Picker */
+.color-picker-btn {
+  position: relative;
 }
 
 /* Editable Content */
 .slate-editable {
   outline: none;
-  font-size: 16px;
-  line-height: 1.7;
+  font-size: 16px; /* 11pt approx */
+  line-height: 1.6;
+  color: #334155;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px; /* Gap between pages */
 }
 
 .slate-editable h1 {
@@ -197,6 +306,7 @@
   margin-top: 1.5em;
   margin-bottom: 0.5em;
   line-height: 1.2;
+  color: #0f172a;
 }
 
 .slate-editable h2 {
@@ -204,6 +314,15 @@
   font-weight: 600;
   margin-top: 1.5em;
   margin-bottom: 0.5em;
+  color: #1e293b;
+}
+
+.slate-editable h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+  color: #334155;
 }
 
 .slate-editable p {
@@ -211,11 +330,14 @@
 }
 
 .slate-editable blockquote {
-  border-left: 3px solid var(--primary-blue);
+  border-left: 4px solid var(--primary-blue);
   padding-left: 16px;
   color: var(--text-secondary);
   font-style: italic;
   margin: 1.5em 0;
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 0 4px 4px 0;
 }
 
 .slate-editable ul,
@@ -226,6 +348,31 @@
 
 .slate-editable li {
   margin-bottom: 0.25em;
+}
+
+/* Tables */
+.slate-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5em 0;
+  font-size: 0.9em;
+}
+
+.slate-table td {
+  border: 1px solid var(--border-color);
+  padding: 8px 12px;
+  vertical-align: top;
+}
+
+/* Links */
+.slate-link {
+  color: var(--primary-blue);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.slate-link:hover {
+  color: var(--primary-blue-hover);
 }
 
 /* Sidebar (Right) */
@@ -240,31 +387,44 @@
 
 .sidebar-header {
   height: 64px;
-  padding: 0 20px;
+  padding: 0 24px;
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--border-color);
+
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #64748b;
 }
 
 .sidebar-content {
-  padding: 20px;
+  padding: 16px;
   flex: 1;
   overflow-y: auto;
+}
+
+.active-users-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .active-user-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px;
-  border-radius: 6px;
-  transition: background-color 0.2s;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background-color 0.15s;
 }
 
 .active-user-item:hover {
-  background-color: var(--bg-gray);
+  background-color: #f1f5f9;
 }
 
 .user-avatar {
@@ -278,48 +438,30 @@
   justify-content: center;
   font-size: 0.875rem;
   font-weight: 600;
-  box-shadow: inset 0 0 0 2px white; /* Ring effect */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 
 .user-info {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .user-name {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-email {
   font-size: 0.75rem;
   color: var(--text-secondary);
-}
-
-.back-btn-link {
-  margin-right: 1rem;
-  text-decoration: none;
-  color: inherit;
-  display: flex;
-  align-items: center;
-}
-
-.back-icon {
-  font-size: 20px;
-  color: #64748b;
-}
-
-.active-users-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-
-.toolbar-icon {
-  font-size: 18px;
-  vertical-align: text-bottom;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .slate-editor-flex-container {
@@ -328,5 +470,34 @@
 
 .slate-editable-content {
   min-height: 600px;
+}
+
+/* Editor Actions (Save Button & Status) */
+.editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.save-status {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  min-width: 150px;
+  text-align: right;
+  transition: opacity 0.3s;
+}
+
+.color-picker-icon {
+  opacity: 0.7;
+}
+
+.hidden-color-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  bottom: 0;
+  left: 0;
 }
 

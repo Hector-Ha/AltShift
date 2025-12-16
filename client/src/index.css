@@ -25,3 +25,126 @@ body {
 button {
   cursor: pointer;
 }
+
+/* Toolbar & Editor Styles */
+.slate-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 10px;
+  border-bottom: 2px solid var(--border-color);
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  align-items: center;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 24px;
+  background: var(--border-color);
+  margin: 0 8px;
+}
+
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  color: var(--secondary-color);
+  cursor: pointer;
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.toolbar-btn:hover {
+  background: #f1f5f9;
+  color: var(--text-color);
+}
+
+.toolbar-btn.active {
+  background: #e0e7ff;
+  color: var(--primary-color);
+}
+
+.toolbar-btn.open {
+  background: #f1f5f9;
+}
+
+.toolbar-icon {
+  font-size: 20px;
+}
+
+/* Dropdown */
+.toolbar-dropdown-container {
+  position: relative;
+}
+
+.toolbar-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 4px;
+  z-index: 20;
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  min-width: max-content;
+}
+
+.dropdown-arrow {
+  font-size: 16px;
+  margin-left: -4px;
+}
+
+.color-picker-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Editor Element Styles */
+.slate-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.slate-table td {
+  border: 1px solid var(--border-color);
+  padding: 8px;
+  min-width: 50px;
+}
+
+.slate-link {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+blockquote {
+  border-left: 2px solid var(--border-color);
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 10px;
+  color: var(--secondary-color);
+  font-style: italic;
+}
+
+code {
+  font-family: monospace;
+  background-color: #f1f5f9;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 90%;
+}

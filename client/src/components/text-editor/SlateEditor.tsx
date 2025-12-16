@@ -7,6 +7,9 @@ import { withHistory } from "slate-history";
 import { Toolbar } from "./Toolbar";
 import { usePagination } from "./usePagination";
 import { withPagination } from "./plugins/withPagination";
+import { withImages } from "./plugins/withImages";
+import { withLinks } from "./plugins/withLinks";
+import { withTables } from "./plugins/withTables";
 
 interface SlateEditorProps {
   initialContent?: string; // JSON string or plain text
@@ -59,6 +62,80 @@ const Element = ({ attributes, children, element }: RenderElementProps) => {
           {children}
         </ol>
       );
+    case "heading-three":
+      return (
+        <h3 style={style} {...attributes}>
+          {children}
+        </h3>
+      );
+    case "heading-four":
+      return (
+        <h4 style={style} {...attributes}>
+          {children}
+        </h4>
+      );
+    case "heading-five":
+      return (
+        <h5 style={style} {...attributes}>
+          {children}
+        </h5>
+      );
+    case "heading-six":
+      return (
+        <h6 style={style} {...attributes}>
+          {children}
+        </h6>
+      );
+    case "image":
+      return (
+        <div {...attributes}>
+          <div contentEditable={false}>
+            <img
+              src={(element as any).url}
+              alt="img"
+              style={{ display: "block", maxWidth: "100%", maxHeight: "20em" }}
+            />
+          </div>
+          {children}
+        </div>
+      );
+    case "video":
+      return (
+        <div {...attributes}>
+          <div contentEditable={false}>
+            <video
+              src={(element as any).url}
+              controls
+              style={{ display: "block", maxWidth: "100%", maxHeight: "20em" }}
+            />
+          </div>
+          {children}
+        </div>
+      );
+    case "link":
+      return (
+        <a {...attributes} href={(element as any).url} className="slate-link">
+          {children}
+        </a>
+      );
+    case "table":
+      return (
+        <table className="slate-table" {...attributes}>
+          <tbody style={style}>{children}</tbody>
+        </table>
+      );
+    case "table-row":
+      return (
+        <tr style={style} {...attributes}>
+          {children}
+        </tr>
+      );
+    case "table-cell":
+      return (
+        <td style={style} {...attributes}>
+          {children}
+        </td>
+      );
     default:
       return (
         <p style={style} {...attributes}>
@@ -82,6 +159,18 @@ const Leaf = ({ attributes, children, leaf }: RenderLeafProps) => {
     children = <u>{children}</u>;
   }
 
+  if (leaf.strikethrough) {
+    children = <s>{children}</s>;
+  }
+  if (leaf.color) {
+    children = <span style={{ color: leaf.color }}>{children}</span>;
+  }
+  if (leaf.backgroundColor) {
+    children = (
+      <span style={{ backgroundColor: leaf.backgroundColor }}>{children}</span>
+    );
+  }
+
   return <span {...attributes}>{children}</span>;
 };
 
@@ -99,7 +188,12 @@ const SlateEditor: React.FC<SlateEditorProps> = ({
     []
   );
   const editor = useMemo(
-    () => withPagination(withHistory(withReact(createEditor()))),
+    () =>
+      withTables(
+        withLinks(
+          withImages(withPagination(withHistory(withReact(createEditor()))))
+        )
+      ),
     []
   );
 

@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { socket } from "../socket/socket";
 import SlateEditor from "../components/text-editor/SlateEditor";
-import Logo from "../components/Logo";
 import "../styles/editor.css";
 import ShareDropdown from "../components/ShareDropdown";
+import { format } from "date-fns";
 
 import { gql } from "../gql";
 import type {
@@ -48,6 +48,12 @@ const DocumentEditor: React.FC = () => {
   const [activeUsers, setActiveUsers] = useState<any[]>([]);
   const isLocalUpdate = useRef(false);
 
+  // Auto-save & Status state
+  const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  // Ref to track if content has changed since last save to avoid unnecessary saves
+  const lastSavedContent = useRef<string>("");
+
   const { data, loading, error } = useQuery<
     GetDocumentQuery,
     GetDocumentQueryVariables
@@ -59,6 +65,7 @@ const DocumentEditor: React.FC = () => {
     if (data?.getDocumentByID) {
       if (data.getDocumentByID.content) {
         setContent(data.getDocumentByID.content ?? "");
+        lastSavedContent.current = data.getDocumentByID.content ?? "";
       }
       if (data.getDocumentByID.title) {
         setTitle(data.getDocumentByID.title);
@@ -70,6 +77,34 @@ const DocumentEditor: React.FC = () => {
     UpdateDocumentMutation,
     UpdateDocumentMutationVariables
   >(UPDATE_DOCUMENT);
+
+  const saveContent = useCallback(
+    async (currentContent: string) => {
+      if (!id) return;
+
+      // Optimistic UI update
+      setIsSaving(true);
+
+      try {
+        await saveDocument({
+          variables: {
+            id: id,
+            input: { content: currentContent },
+          },
+        });
+        setLastSaveTime(new Date());
+        lastSavedContent.current = currentContent;
+      } catch (err) {
+        console.error("Failed to save:", err);
+      } finally {
+        // Small delay to let user see the "Cooking..." message briefly if it was fast
+        setTimeout(() => {
+          setIsSaving(false);
+        }, 500);
+      }
+    },
+    [id, saveDocument]
+  );
 
   const handleTitleBlur = () => {
     if (data?.getDocumentByID && title !== data.getDocumentByID.title) {
@@ -121,6 +156,10 @@ const DocumentEditor: React.FC = () => {
       if (operation.content) {
         isLocalUpdate.current = true;
         setContent(operation.content);
+        // Also update lastSavedContent to prevent overwriting remote changes with old local state on next auto-save
+        // lastSavedContent.current = operation.content; // actually, auto-save should probably overwrite if we have pending changes, but here we just accept remote.
+        // If we are typing, isLocalUpdate prevents us from emitting back.
+
         setTimeout(() => (isLocalUpdate.current = false), 100);
       }
     };
@@ -144,6 +183,35 @@ const DocumentEditor: React.FC = () => {
     };
   }, [id, navigate]);
 
+  // Auto Save
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Only save if content is different from last save and we have content
+      if (
+        content &&
+        content !== lastSavedContent.current &&
+        !isLocalUpdate.current
+      ) {
+        saveContent(content);
+      }
+    }, 8000); // 8 seconds debounce
+
+    return () => clearTimeout(timer);
+  }, [content, saveContent]);
+
+  // --- CTRL+S EFFECT ---
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        saveContent(content);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [content, saveContent]);
+
   const handleChange = (newContent: string) => {
     setContent(newContent);
 
@@ -155,13 +223,8 @@ const DocumentEditor: React.FC = () => {
     }
   };
 
-  const handleSave = () => {
-    saveDocument({
-      variables: {
-        id: id!,
-        input: { content },
-      },
-    });
+  const handleManualSave = () => {
+    saveContent(content);
   };
 
   if (!id) return <div>Error: No Document ID provided</div>;
@@ -170,33 +233,49 @@ const DocumentEditor: React.FC = () => {
 
   return (
     <div className="editor-page">
-      {/* Main Content Area */}
       <div className="editor-main">
         <div className="editor-header">
-          <Link to="/dashboard" className="back-btn-link">
-            <span className="material-icons back-icon">arrow_back</span>
-          </Link>
-          <input
-            type="text"
-            className="editor-title-input"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={handleTitleBlur}
-            onKeyDown={handleTitleKeyDown}
-            placeholder="Untitled Document"
-          />
-          <button className="save-btn" onClick={handleSave}>
-            Save
-          </button>
-          {data?.getDocumentByID && (
-            <ShareDropdown
-              documentId={id!}
-              currentVisibility={data.getDocumentByID.visibility as any}
-              isOwner={
-                data.getDocumentByID.owner.id === localStorage.getItem("userId")
-              }
+          <div className="editor-title-container">
+            <Link to="/dashboard" className="back-btn-link">
+              <span className="material-icons back-icon">arrow_back</span>
+            </Link>
+            <input
+              type="text"
+              className="editor-title-input"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={handleTitleBlur}
+              onKeyDown={handleTitleKeyDown}
+              placeholder="Untitled Document"
             />
-          )}
+          </div>
+
+          <div className="editor-actions">
+            <span className="save-status">
+              {isSaving
+                ? "Cooking Save Checkpoint..."
+                : lastSaveTime
+                ? `Last save ${format(lastSaveTime, "h:mm aa")}`
+                : ""}
+            </span>
+            <button
+              className="save-btn"
+              onClick={handleManualSave}
+              disabled={isSaving}
+            >
+              {isSaving ? "Saving..." : "Save"}
+            </button>
+            {data?.getDocumentByID && (
+              <ShareDropdown
+                documentId={id!}
+                currentVisibility={data.getDocumentByID.visibility as any}
+                isOwner={
+                  data.getDocumentByID.owner?.id ===
+                  localStorage.getItem("userId")
+                }
+              />
+            )}
+          </div>
         </div>
 
         <div className="editor-canvas">

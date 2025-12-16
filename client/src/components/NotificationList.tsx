@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@apollo/client/react";
 import { gql } from "../gql";
 import { formatDistanceToNow } from "date-fns";
 import "../styles/dashboard.css";
+import "../styles/NotificationList.css";
 import { socket } from "../socket/socket";
 import type {
   MyNotificationsQuery,
@@ -81,7 +82,6 @@ const NotificationList: React.FC = () => {
             (s) => !(s.user.id === userId && s.documentId === docId)
           );
         } else {
-          // Add if not exists
           const exists = prev.find(
             (s) => s.user.id === userId && s.documentId === docId
           );
@@ -266,177 +266,6 @@ const NotificationList: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* Inline Styles */}
-      <style>{`
-        .notification-grid-container {
-            display: grid;
-            grid-template-columns: 5fr 2fr;
-            gap: 1.5rem;
-            margin-top: 2rem;
-            align-items: start;
-        }
-
-        .updates-panel {
-            background: #f9fafb;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-            padding: 1rem;
-            min-width: 0;
-        }
-
-        .active-panel {
-            background: #ecfdf5;
-            background: #ffffff;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-            padding: 1rem;
-            min-width: 0;
-            height: fit-content;
-        }
-        
-        /* Inner content for Active */
-        .active-sessions-content h4, .no-active-sessions h4 {
-            margin: 0 0 1rem 0;
-            font-size: 0.9rem;
-            color: #111827;
-            font-weight: 600;
-            border-bottom: 1px solid #f3f4f6;
-            padding-bottom: 0.5rem;
-        }
-
-        .active-session-block {
-            font-size: 0.85rem;
-            color: #064e3b;
-            background: #ecfdf5; /* Green block inside white panel */
-            border: 1px solid #a7f3d0;
-            padding: 0.75rem;
-            margin-bottom: 0.75rem;
-            border-radius: 6px;
-            word-wrap: break-word;
-        }
-        
-        .active-session-block:last-child {
-            margin-bottom: 0;
-        }
-
-        .active-user-names { font-weight: bold; }
-        .active-doc-title { font-style: italic; }
-
-        .no-activity-msg {
-            font-size: 0.85rem;
-            color: #6b7280;
-            font-style: italic;
-            margin: 0;
-        }
-
-        /* Updates Panel Styles */
-        .notification-items {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-          max-height: 400px;
-          overflow-y: auto;
-        }
-        .notification-item {
-          padding: 0.75rem;
-          border-bottom: 1px solid #eee;
-          cursor: pointer;
-          transition: background 0.2s;
-          position: relative;
-        }
-        .notification-item:hover {
-          background: #f0f0f0;
-        }
-        .notification-item.unread {
-          background: #eef2ff;
-        }
-        .notif-header {
-          display: flex;
-          justify-content: space-between;
-          font-size: 0.85rem;
-          color: #6b7280;
-          margin-bottom: 0.25rem;
-        }
-        .notif-sender {
-          font-weight: 600;
-          color: #374151;
-        }
-        .notif-message {
-          margin: 0;
-          font-size: 0.95rem;
-          color: #111827;
-        }
-        .unread-dot {
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          color: #2563eb;
-          font-size: 0.8rem;
-        }
-        .no-notifications {
-           color: #6b7280;
-           text-align: center;
-           font-style: italic;
-        }
-        .section-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 1rem;
-        }
-        .section-title {
-          margin: 0; 
-        }
-        .filter-dropdown-container {
-          position: relative;
-        }
-        .filter-btn {
-          background: transparent;
-          border: 1px solid #e5e7eb;
-          border-radius: 6px;
-          padding: 0.4rem 0.8rem;
-          font-size: 0.85rem;
-          color: #4b5563;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          transition: all 0.2s;
-        }
-        .filter-btn:hover {
-          background: #f3f4f6;
-          border-color: #d1d5db;
-        }
-        .filter-menu {
-          position: absolute;
-          top: 100%;
-          right: 0;
-          margin-top: 0.5rem;
-          background: white;
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-          width: 120px;
-          z-index: 10;
-          overflow: hidden;
-        }
-        .filter-item {
-          padding: 0.6rem 1rem;
-          font-size: 0.9rem;
-          color: #374151;
-          cursor: pointer;
-          transition: background 0.15s;
-        }
-        .filter-item:hover {
-          background: #f9fafb;
-        }
-        .filter-item.active {
-          background: #f3f4f6;
-          font-weight: 500;
-          color: #111827;
-        }
-      `}</style>
     </div>
   );
 };

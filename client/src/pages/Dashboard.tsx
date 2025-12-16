@@ -136,7 +136,6 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard-layout">
-      {/* Navigation Bar */}
       <nav className="dashboard-nav">
         <div className="nav-brand">
           <Logo />
@@ -165,10 +164,9 @@ const Dashboard: React.FC = () => {
               <option value="NOT_OWNED">Not Owned</option>
             </select>
             <button
-              className="filter-btn"
+              className="filter-btn filter-btn-nowrap"
               onClick={() => alert("Sort/Filter functionality coming soon!")}
               title="More Filters & Sort"
-              style={{ whiteSpace: "nowrap" }}
             >
               Filter/Sort
             </button>

@@ -243,3 +243,8 @@
   margin: 0;
 }
 
+
+.filter-btn-nowrap {
+  white-space: nowrap;
+}
+
