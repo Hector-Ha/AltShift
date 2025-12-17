@@ -4,34 +4,37 @@ import { useMutation } from "@apollo/client/react";
 import { useNavigate, Link } from "react-router-dom";
 import { gql } from "../gql";
 import Logo from "../components/Logo";
-import type { LoginMutation, LoginMutationVariables } from "../gql/graphql";
+import type {
+  CreateUserMutation,
+  CreateUserMutationVariables,
+} from "../gql/graphql";
 
-const LOGIN_MUTATION = gql(`
-  mutation Login($email: String!, $password: String!) {
-    login(email: $email, password: $password) {
+const REGISTER_MUTATION = gql(`
+  mutation CreateUser($input: createUserInput!) {
+    createUser(input: $input) {
       token
       user {
         id
-        email
       }
     }
   }
 `);
 
-const Login: React.FC = () => {
+const Signup: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
 
-  const [login, { loading, error }] = useMutation<
-    LoginMutation,
-    LoginMutationVariables
-  >(LOGIN_MUTATION, {
+  const [register, { loading, error }] = useMutation<
+    CreateUserMutation,
+    CreateUserMutationVariables
+  >(REGISTER_MUTATION, {
     onCompleted: (data) => {
-      if (data.login) {
-        localStorage.setItem("token", data.login.token);
-        if (data.login.user) {
-          localStorage.setItem("userId", data.login.user.id);
+      if (data.createUser) {
+        localStorage.setItem("token", data.createUser.token);
+        if (data.createUser.user) {
+          localStorage.setItem("userId", data.createUser.user.id);
         }
         navigate("/dashboard");
       }
@@ -40,12 +43,19 @@ const Login: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    login({ variables: { email, password } });
+    register({
+      variables: {
+        input: {
+          email,
+          password,
+          personalInformation: { firstName },
+        },
+      },
+    });
   };
 
   return (
     <div className="login-page">
-      {/* Left Side - Brand */}
       <div className="login-brand-section">
         <div className="brand-header">
           <Logo />
@@ -53,22 +63,31 @@ const Login: React.FC = () => {
         </div>
         <div className="brand-content">
           <blockquote className="brand-quote">
-            "This document editor has completely transformed how our team
-            collaborates. It's fast, intuitive, and beautiful."
+            "Join usage today and experience the future of document
+            collaboration."
           </blockquote>
-          <div className="brand-author">Sofia Davis, Product Designer</div>
         </div>
       </div>
 
-      {/* Right Side - Form */}
       <div className="login-form-section">
         <div className="login-form-container">
           <div className="form-header">
-            <h1>Welcome back</h1>
-            <p>Enter your email below to login to your account</p>
+            <h1>Create an account</h1>
+            <p>Enter your details below to create your account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-group">
+              <input
+                className="form-input"
+                type="text"
+                placeholder="First Name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+              />
+            </div>
+
             <div className="form-group">
               <input
                 className="form-input"
@@ -91,34 +110,21 @@ const Login: React.FC = () => {
               />
             </div>
 
-            <div style={{ textAlign: "right" }}>
-              <Link
-                to="/forgot-password"
-                style={{
-                  fontSize: "0.875rem",
-                  color: "#4f46e5",
-                  textDecoration: "none",
-                }}
-              >
-                Forgot Password?
-              </Link>
-            </div>
-
             <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? "Signing In..." : "Sign In"}
+              {loading ? "Creating Account..." : "Sign Up"}
             </button>
           </form>
 
           {error && (
             <div className="error-message">
-              <p>Login Error: {error.message}</p>
+              <p>Register Error: {error.message}</p>
             </div>
           )}
 
           <div className="auth-footer">
-            Don't have an account?
-            <Link to="/signup" className="switch-auth-btn-link">
-              Sign Up
+            Already have an account?
+            <Link to="/" className="switch-auth-btn-link">
+              Login
             </Link>
           </div>
         </div>
@@ -127,4 +133,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default Signup;

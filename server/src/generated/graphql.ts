@@ -20,6 +20,11 @@ export type Scalars = {
   DateTime: { input: any; output: any; }
 };
 
+export enum ArchiveType {
+  Manual = 'MANUAL',
+  Scheduled = 'SCHEDULED'
+}
+
 export type AttachmentInput = {
   content: Scalars['String']['input'];
   mimeType: Scalars['String']['input'];
@@ -34,15 +39,19 @@ export type AuthPayload = {
 
 export type Document = {
   __typename?: 'Document';
+  archiveType?: Maybe<ArchiveType>;
+  archivedAt?: Maybe<Scalars['DateTime']['output']>;
   collaborators: Array<User>;
   content: Scalars['String']['output'];
   createdAt: Scalars['DateTime']['output'];
   deletedAt?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   invitations?: Maybe<Array<User>>;
+  isArchived?: Maybe<Scalars['Boolean']['output']>;
   /** @deprecated Use visibility instead */
   isPublic: Scalars['Boolean']['output'];
   owner: User;
+  scheduledDeletionTime?: Maybe<Scalars['DateTime']['output']>;
   title: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
   versions: Array<DocumentVersion>;
@@ -50,6 +59,7 @@ export type Document = {
 };
 
 export type DocumentFilterInput = {
+  isArchived?: InputMaybe<Scalars['Boolean']['input']>;
   isCollaborating?: InputMaybe<Scalars['Boolean']['input']>;
   isFavorite?: InputMaybe<Scalars['Boolean']['input']>;
   isOwned?: InputMaybe<Scalars['Boolean']['input']>;
@@ -80,6 +90,8 @@ export type Mutation = {
   __typename?: 'Mutation';
   acceptCollaborateInvitation: Document;
   addCollaborator: Document;
+  archiveDocument: Document;
+  cancelScheduledDeletion: Document;
   changePassword: Scalars['Boolean']['output'];
   createDocument: Document;
   createDocumentWithAI: Document;
@@ -87,8 +99,10 @@ export type Mutation = {
   createUser: AuthPayload;
   declineCollaborateInvitation: Scalars['Boolean']['output'];
   deleteDocument: Scalars['DateTime']['output'];
+  deleteDocumentImmediately: Scalars['Boolean']['output'];
   deleteUser: Scalars['DateTime']['output'];
   duplicateDocument: Document;
+  forgotPassword: Scalars['Boolean']['output'];
   hardDeleteDocument: Scalars['Boolean']['output'];
   hardDeleteUser: Scalars['Boolean']['output'];
   leaveDocument: Scalars['Boolean']['output'];
@@ -101,6 +115,7 @@ export type Mutation = {
   restoreDocument: Document;
   revertToSnapshot: Document;
   transferOwnership: Document;
+  unarchiveDocument: Document;
   updateDocument: Document;
   updateUser: User;
   verifyEmail: Scalars['Boolean']['output'];
@@ -115,6 +130,18 @@ export type MutationAcceptCollaborateInvitationArgs = {
 export type MutationAddCollaboratorArgs = {
   documentID: Scalars['ID']['input'];
   userID: Scalars['ID']['input'];
+};
+
+
+export type MutationArchiveDocumentArgs = {
+  documentID: Scalars['ID']['input'];
+  removeCollaborators: Scalars['Boolean']['input'];
+  type: ArchiveType;
+};
+
+
+export type MutationCancelScheduledDeletionArgs = {
+  documentID: Scalars['ID']['input'];
 };
 
 
@@ -156,6 +183,11 @@ export type MutationDeleteDocumentArgs = {
 };
 
 
+export type MutationDeleteDocumentImmediatelyArgs = {
+  documentID: Scalars['ID']['input'];
+};
+
+
 export type MutationDeleteUserArgs = {
   userID: Scalars['ID']['input'];
 };
@@ -163,6 +195,11 @@ export type MutationDeleteUserArgs = {
 
 export type MutationDuplicateDocumentArgs = {
   documentID: Scalars['ID']['input'];
+};
+
+
+export type MutationForgotPasswordArgs = {
+  email: Scalars['String']['input'];
 };
 
 
@@ -217,6 +254,11 @@ export type MutationRevertToSnapshotArgs = {
 export type MutationTransferOwnershipArgs = {
   documentID: Scalars['ID']['input'];
   input: TransferOwnershipInput;
+};
+
+
+export type MutationUnarchiveDocumentArgs = {
+  documentID: Scalars['ID']['input'];
 };
 
 
@@ -341,8 +383,8 @@ export type CreateUserInput = {
 };
 
 export type ResetPasswordInput = {
-  email: Scalars['String']['input'];
   newPassword: Scalars['String']['input'];
+  token: Scalars['String']['input'];
 };
 
 export type TransferOwnershipInput = {
@@ -435,6 +477,7 @@ export type DirectiveResolverFn<TResult = Record<PropertyKey, never>, TParent = 
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  ArchiveType: ArchiveType;
   AttachmentInput: AttachmentInput;
   AuthPayload: ResolverTypeWrapper<Omit<AuthPayload, 'user'> & { user: ResolversTypes['User'] }>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
@@ -505,14 +548,18 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
 }
 
 export type DocumentResolvers<ContextType = any, ParentType extends ResolversParentTypes['Document'] = ResolversParentTypes['Document']> = {
+  archiveType?: Resolver<Maybe<ResolversTypes['ArchiveType']>, ParentType, ContextType>;
+  archivedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   collaborators?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   deletedAt?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   invitations?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>;
+  isArchived?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   isPublic?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   owner?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  scheduledDeletionTime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   versions?: Resolver<Array<ResolversTypes['DocumentVersion']>, ParentType, ContextType>;
@@ -529,6 +576,8 @@ export type DocumentVersionResolvers<ContextType = any, ParentType extends Resol
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   acceptCollaborateInvitation?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationAcceptCollaborateInvitationArgs, 'documentID'>>;
   addCollaborator?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationAddCollaboratorArgs, 'documentID' | 'userID'>>;
+  archiveDocument?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationArchiveDocumentArgs, 'documentID' | 'removeCollaborators' | 'type'>>;
+  cancelScheduledDeletion?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationCancelScheduledDeletionArgs, 'documentID'>>;
   changePassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationChangePasswordArgs, 'input' | 'userID'>>;
   createDocument?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationCreateDocumentArgs, 'input'>>;
   createDocumentWithAI?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationCreateDocumentWithAiArgs, 'prompt'>>;
@@ -536,8 +585,10 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createUser?: Resolver<ResolversTypes['AuthPayload'], ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'input'>>;
   declineCollaborateInvitation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeclineCollaborateInvitationArgs, 'documentID'>>;
   deleteDocument?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType, RequireFields<MutationDeleteDocumentArgs, 'documentID'>>;
+  deleteDocumentImmediately?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteDocumentImmediatelyArgs, 'documentID'>>;
   deleteUser?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'userID'>>;
   duplicateDocument?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationDuplicateDocumentArgs, 'documentID'>>;
+  forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'email'>>;
   hardDeleteDocument?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationHardDeleteDocumentArgs, 'documentID'>>;
   hardDeleteUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationHardDeleteUserArgs, 'userID'>>;
   leaveDocument?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationLeaveDocumentArgs, 'documentID'>>;
@@ -550,6 +601,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   restoreDocument?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationRestoreDocumentArgs, 'documentID'>>;
   revertToSnapshot?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationRevertToSnapshotArgs, 'documentID' | 'snapshotID'>>;
   transferOwnership?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationTransferOwnershipArgs, 'documentID' | 'input'>>;
+  unarchiveDocument?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationUnarchiveDocumentArgs, 'documentID'>>;
   updateDocument?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationUpdateDocumentArgs, 'documentID' | 'input'>>;
   updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'input' | 'userID'>>;
   verifyEmail?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationVerifyEmailArgs, 'token'>>;

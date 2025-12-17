@@ -5,7 +5,8 @@ import { socket } from "../socket/socket";
 import SlateEditor from "../components/text-editor/SlateEditor";
 import "../styles/editor.css";
 import ShareDropdown from "../components/ShareDropdown";
-import { format } from "date-fns";
+import ArchiveModal from "../components/ArchiveModal";
+import { format, differenceInDays } from "date-fns";
 
 import { gql } from "../gql";
 import type {
@@ -13,6 +14,7 @@ import type {
   GetDocumentQueryVariables,
   UpdateDocumentMutation,
   UpdateDocumentMutationVariables,
+  ArchiveType,
 } from "../gql/graphql";
 
 import type { ActiveUser } from "../socket/interfaces";
@@ -24,6 +26,9 @@ const GET_DOCUMENT = gql(`
       title
       content
       visibility
+      isArchived
+      scheduledDeletionTime
+      archiveType
       owner {
         id
       }
@@ -40,6 +45,41 @@ const UPDATE_DOCUMENT = gql(`
   }
 `);
 
+const ARCHIVE_DOCUMENT = gql(`
+  mutation ArchiveDocument($documentID: ID!, $type: ArchiveType!, $removeCollaborators: Boolean!) {
+    archiveDocument(documentID: $documentID, type: $type, removeCollaborators: $removeCollaborators) {
+      id
+      isArchived
+      scheduledDeletionTime
+    }
+  }
+`);
+
+const UNARCHIVE_DOCUMENT = gql(`
+  mutation UnarchiveDocument($documentID: ID!) {
+    unarchiveDocument(documentID: $documentID) {
+      id
+      isArchived
+    }
+  }
+`);
+
+const CANCEL_SCHEDULED_DELETION = gql(`
+  mutation CancelScheduledDeletion($documentID: ID!) {
+    cancelScheduledDeletion(documentID: $documentID) {
+      id
+      scheduledDeletionTime
+      archiveType
+    }
+  }
+`);
+
+const DELETE_DOCUMENT_IMMEDIATELY = gql(`
+  mutation DeleteDocumentImmediately($documentID: ID!) {
+    deleteDocumentImmediately(documentID: $documentID)
+  }
+`);
+
 const DocumentEditor: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -51,15 +91,29 @@ const DocumentEditor: React.FC = () => {
   // Auto-save & Status state
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  // Ref to track if content has changed since last save to avoid unnecessary saves
   const lastSavedContent = useRef<string>("");
 
-  const { data, loading, error } = useQuery<
+  // Archive State
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+
+  const { data, loading, error, refetch } = useQuery<
     GetDocumentQuery,
     GetDocumentQueryVariables
   >(GET_DOCUMENT, {
     variables: { id: id! },
   });
+
+  const isArchived = data?.getDocumentByID?.isArchived;
+  const scheduledDeletionTime = data?.getDocumentByID?.scheduledDeletionTime;
+  const isOwner =
+    data?.getDocumentByID?.owner.id === localStorage.getItem("userId");
+
+  // Mutations
+  const [saveDocument] = useMutation(UPDATE_DOCUMENT);
+  const [archiveMock] = useMutation(ARCHIVE_DOCUMENT);
+  const [unarchive] = useMutation(UNARCHIVE_DOCUMENT);
+  const [cancelDeletion] = useMutation(CANCEL_SCHEDULED_DELETION);
+  const [hardDelete] = useMutation(DELETE_DOCUMENT_IMMEDIATELY);
 
   useEffect(() => {
     if (data?.getDocumentByID) {
@@ -73,18 +127,11 @@ const DocumentEditor: React.FC = () => {
     }
   }, [data]);
 
-  const [saveDocument] = useMutation<
-    UpdateDocumentMutation,
-    UpdateDocumentMutationVariables
-  >(UPDATE_DOCUMENT);
-
   const saveContent = useCallback(
     async (currentContent: string) => {
-      if (!id) return;
+      if (!id || isArchived) return;
 
-      // Optimistic UI update
       setIsSaving(true);
-
       try {
         await saveDocument({
           variables: {
@@ -97,16 +144,16 @@ const DocumentEditor: React.FC = () => {
       } catch (err) {
         console.error("Failed to save:", err);
       } finally {
-        // Small delay to let user see the "Cooking..." message briefly if it was fast
         setTimeout(() => {
           setIsSaving(false);
         }, 500);
       }
     },
-    [id, saveDocument]
+    [id, saveDocument, isArchived]
   );
 
   const handleTitleBlur = () => {
+    if (isArchived) return;
     if (data?.getDocumentByID && title !== data.getDocumentByID.title) {
       saveDocument({
         variables: {
@@ -119,11 +166,10 @@ const DocumentEditor: React.FC = () => {
 
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      e.currentTarget.blur(); // Triggers onBlur
+      e.currentTarget.blur();
     }
   };
 
-  // Socket Connection
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -131,7 +177,6 @@ const DocumentEditor: React.FC = () => {
       return;
     }
 
-    // Connect the singleton socket
     if (!socket.connected) {
       socket.connect();
     }
@@ -156,10 +201,6 @@ const DocumentEditor: React.FC = () => {
       if (operation.content) {
         isLocalUpdate.current = true;
         setContent(operation.content);
-        // Also update lastSavedContent to prevent overwriting remote changes with old local state on next auto-save
-        // lastSavedContent.current = operation.content; // actually, auto-save should probably overwrite if we have pending changes, but here we just accept remote.
-        // If we are typing, isLocalUpdate prevents us from emitting back.
-
         setTimeout(() => (isLocalUpdate.current = false), 100);
       }
     };
@@ -169,7 +210,6 @@ const DocumentEditor: React.FC = () => {
     socket.on("join-document", onJoinDocument);
     socket.on("text-update", onTextUpdate);
 
-    // Initial join if already connected
     if (socket.connected) {
       socket.emit("join-document", id!);
     }
@@ -179,27 +219,24 @@ const DocumentEditor: React.FC = () => {
       socket.off("active-users", onActiveUsers);
       socket.off("join-document", onJoinDocument);
       socket.off("text-update", onTextUpdate);
-      socket.disconnect();
     };
   }, [id, navigate]);
 
-  // Auto Save
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Only save if content is different from last save and we have content
       if (
         content &&
         content !== lastSavedContent.current &&
-        !isLocalUpdate.current
+        !isLocalUpdate.current &&
+        !isArchived
       ) {
         saveContent(content);
       }
-    }, 8000); // 8 seconds debounce
+    }, 8000);
 
     return () => clearTimeout(timer);
-  }, [content, saveContent]);
+  }, [content, saveContent, isArchived]);
 
-  // --- CTRL+S EFFECT ---
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
@@ -213,6 +250,7 @@ const DocumentEditor: React.FC = () => {
   }, [content, saveContent]);
 
   const handleChange = (newContent: string) => {
+    if (isArchived) return;
     setContent(newContent);
 
     if (!isLocalUpdate.current && socket) {
@@ -227,13 +265,154 @@ const DocumentEditor: React.FC = () => {
     saveContent(content);
   };
 
+  const handleArchiveConfirm = async (
+    removeCollaborators: boolean,
+    scheduleDeletion: boolean
+  ) => {
+    try {
+      await archiveMock({
+        variables: {
+          documentID: id!,
+          type: scheduleDeletion ? "SCHEDULED" : "MANUAL",
+          removeCollaborators,
+        },
+      });
+      refetch();
+    } catch (err) {
+      alert("Error archiving: " + err);
+    }
+  };
+
+  const handleRestore = async () => {
+    try {
+      await unarchive({
+        variables: { documentID: id! },
+      });
+      refetch();
+    } catch (err) {
+      alert("Error restoring: " + err);
+    }
+  };
+
+  const handleCancelDeletion = async () => {
+    try {
+      await cancelDeletion({
+        variables: { documentID: id! },
+      });
+      refetch();
+    } catch (err) {
+      alert("Error canceling deletion: " + err);
+    }
+  };
+
+  const handleHardDelete = async () => {
+    if (
+      confirm(
+        "Are you sure you want to permanently delete this document? This cannot be undone."
+      )
+    ) {
+      try {
+        await hardDelete({
+          variables: { documentID: id! },
+        });
+        navigate("/dashboard");
+      } catch (err) {
+        alert("Error deleting: " + err);
+      }
+    }
+  };
+
   if (!id) return <div>Error: No Document ID provided</div>;
   if (loading) return <div>Loading Doc...</div>;
   if (error) return <div>Error: {error.message}</div>;
+  if (!data?.getDocumentByID) {
+    return (
+      <div
+        className="editor-page"
+        style={{
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
+        }}
+      >
+        <h2>Document Not Found</h2>
+        <p>This document may have been deleted or does not exist.</p>
+        <Link
+          to="/dashboard"
+          className="save-btn"
+          style={{ textDecoration: "none", marginTop: "20px" }}
+        >
+          Back to Dashboard
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="editor-page">
+      <ArchiveModal
+        isOpen={showArchiveModal}
+        onClose={() => setShowArchiveModal(false)}
+        onConfirm={handleArchiveConfirm}
+        title={title}
+      />
+
       <div className="editor-main">
+        {isArchived && (
+          <div
+            className={`archive-banner ${
+              scheduledDeletionTime ? "banner-warning" : "banner-info"
+            }`}
+          >
+            <div className="banner-content">
+              <span className="material-icons">archive</span>
+              <span>
+                This document is archived and read-only.
+                {scheduledDeletionTime && (
+                  <>
+                    {" "}
+                    Scheduled for deletion in{" "}
+                    <strong>
+                      {differenceInDays(
+                        new Date(scheduledDeletionTime),
+                        new Date()
+                      )}{" "}
+                      days
+                    </strong>{" "}
+                    ({format(new Date(scheduledDeletionTime), "MMM d, yyyy")}).
+                  </>
+                )}
+              </span>
+            </div>
+            <div className="banner-actions">
+              {isOwner && (
+                <>
+                  {scheduledDeletionTime && (
+                    <button
+                      className="banner-btn"
+                      onClick={handleCancelDeletion}
+                    >
+                      Cancel Deletion
+                    </button>
+                  )}
+                  <button
+                    className="banner-btn primary"
+                    onClick={handleRestore}
+                  >
+                    Restore
+                  </button>
+                  <button
+                    className="banner-btn danger"
+                    onClick={handleHardDelete}
+                  >
+                    Delete Now
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="editor-header">
           <div className="editor-title-container">
             <Link to="/dashboard" className="back-btn-link">
@@ -247,25 +426,31 @@ const DocumentEditor: React.FC = () => {
               onBlur={handleTitleBlur}
               onKeyDown={handleTitleKeyDown}
               placeholder="Untitled Document"
+              disabled={isArchived}
             />
           </div>
 
           <div className="editor-actions">
-            <span className="save-status">
-              {isSaving
-                ? "Cooking Save Checkpoint..."
-                : lastSaveTime
-                ? `Last save ${format(lastSaveTime, "h:mm aa")}`
-                : ""}
-            </span>
-            <button
-              className="save-btn"
-              onClick={handleManualSave}
-              disabled={isSaving}
-            >
-              {isSaving ? "Saving..." : "Save"}
-            </button>
-            {data?.getDocumentByID && (
+            {!isArchived && (
+              <>
+                <span className="save-status">
+                  {isSaving
+                    ? "Cooking Save Checkpoint..."
+                    : lastSaveTime
+                    ? `Last save ${format(lastSaveTime, "h:mm aa")}`
+                    : ""}
+                </span>
+                <button
+                  className="save-btn"
+                  onClick={handleManualSave}
+                  disabled={isSaving}
+                >
+                  {isSaving ? "Saving..." : "Save"}
+                </button>
+              </>
+            )}
+
+            {data?.getDocumentByID && !isArchived && (
               <ShareDropdown
                 documentId={id!}
                 currentVisibility={data.getDocumentByID.visibility as any}
@@ -275,15 +460,30 @@ const DocumentEditor: React.FC = () => {
                 }
               />
             )}
+
+            {isOwner && !isArchived && (
+              <button
+                className="archive-btn"
+                onClick={() => setShowArchiveModal(true)}
+                title="Archive Document"
+              >
+                <span className="material-icons">archive</span>
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="editor-canvas">
-          <SlateEditor initialContent={content} onChange={handleChange} />
+        <div
+          className={`editor-canvas ${isArchived ? "read-only-canvas" : ""}`}
+        >
+          <SlateEditor
+            initialContent={content}
+            onChange={handleChange}
+            readOnly={isArchived}
+          />
         </div>
       </div>
 
-      {/* Sidebar (Right) */}
       <div className="editor-sidebar">
         <div className="sidebar-header">Active Users</div>
         <div className="sidebar-content">

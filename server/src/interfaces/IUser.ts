@@ -25,4 +25,6 @@ export interface IUser {
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
 }

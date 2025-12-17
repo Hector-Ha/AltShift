@@ -1,0 +1,123 @@
+import React, { useState } from "react";
+import "../styles/NewLogin.css";
+import { useMutation } from "@apollo/client/react";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { gql } from "../gql";
+import Logo from "../components/Logo";
+import type {
+  ResetPasswordMutation,
+  ResetPasswordMutationVariables,
+} from "../gql/graphql";
+
+const RESET_PASSWORD_MUTATION = gql(`
+  mutation ResetPassword($input: resetPasswordInput!) {
+    resetPassword(input: $input)
+  }
+`);
+
+const ResetPassword: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
+
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [resetPassword, { loading, error }] = useMutation<
+    ResetPasswordMutation,
+    ResetPasswordMutationVariables
+  >(RESET_PASSWORD_MUTATION, {
+    onCompleted: (data) => {
+      if (data.resetPassword) {
+        navigate("/");
+      }
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token) return;
+    if (newPassword !== confirmPassword) {
+      alert("Passwords do not match"); // Simple alert for now, improved UI later if needed
+      return;
+    }
+
+    resetPassword({
+      variables: {
+        input: {
+          token,
+          newPassword,
+        },
+      },
+    });
+  };
+
+  if (!token) {
+    return (
+      <div className="login-page">
+        <div className="login-form-section" style={{ width: "100%" }}>
+          <div className="login-form-container">
+            <p>Invalid or missing token.</p>
+            <Link to="/">Go to Login</Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="login-page">
+      <div className="login-brand-section">
+        <div className="brand-header">
+          <Logo />
+          <span>AltShift</span>
+        </div>
+      </div>
+
+      <div className="login-form-section">
+        <div className="login-form-container">
+          <div className="form-header">
+            <h1>Reset Password</h1>
+            <p>Enter your new password below.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-group">
+              <input
+                className="form-input"
+                type="password"
+                placeholder="New Password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <input
+                className="form-input"
+                type="password"
+                placeholder="Confirm New Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <button type="submit" className="submit-btn" disabled={loading}>
+              {loading ? "Resetting..." : "Reset Password"}
+            </button>
+          </form>
+
+          {error && (
+            <div className="error-message">
+              <p>Error: {error.message}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ResetPassword;
