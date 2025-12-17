@@ -105,6 +105,7 @@ export type Mutation = {
   forgotPassword: Scalars['Boolean']['output'];
   hardDeleteDocument: Scalars['Boolean']['output'];
   hardDeleteUser: Scalars['Boolean']['output'];
+  inviteCollaborator: Document;
   leaveDocument: Scalars['Boolean']['output'];
   login: AuthPayload;
   logout: Scalars['Boolean']['output'];
@@ -124,6 +125,7 @@ export type Mutation = {
 
 export type MutationAcceptCollaborateInvitationArgs = {
   documentID: Scalars['ID']['input'];
+  notificationID?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -175,6 +177,7 @@ export type MutationCreateUserArgs = {
 
 export type MutationDeclineCollaborateInvitationArgs = {
   documentID: Scalars['ID']['input'];
+  notificationID?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -210,6 +213,12 @@ export type MutationHardDeleteDocumentArgs = {
 
 export type MutationHardDeleteUserArgs = {
   userID: Scalars['ID']['input'];
+};
+
+
+export type MutationInviteCollaboratorArgs = {
+  documentID: Scalars['ID']['input'];
+  email: Scalars['String']['input'];
 };
 
 
@@ -310,13 +319,17 @@ export type PersonalInformation = {
   __typename?: 'PersonalInformation';
   DOB?: Maybe<Scalars['DateTime']['output']>;
   firstName: Scalars['String']['output'];
-  lastName?: Maybe<Scalars['String']['output']>;
+  jobTitle?: Maybe<Scalars['String']['output']>;
+  lastName: Scalars['String']['output'];
+  organization: Scalars['String']['output'];
 };
 
 export type PersonalInformationInput = {
   DOB?: InputMaybe<Scalars['DateTime']['input']>;
   firstName: Scalars['String']['input'];
-  lastName?: InputMaybe<Scalars['String']['input']>;
+  jobTitle?: InputMaybe<Scalars['String']['input']>;
+  lastName: Scalars['String']['input'];
+  organization: Scalars['String']['input'];
 };
 
 export type Query = {
@@ -591,6 +604,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'email'>>;
   hardDeleteDocument?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationHardDeleteDocumentArgs, 'documentID'>>;
   hardDeleteUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationHardDeleteUserArgs, 'userID'>>;
+  inviteCollaborator?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'documentID' | 'email'>>;
   leaveDocument?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationLeaveDocumentArgs, 'documentID'>>;
   login?: Resolver<ResolversTypes['AuthPayload'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'email' | 'password'>>;
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -621,7 +635,9 @@ export type NotificationResolvers<ContextType = any, ParentType extends Resolver
 export type PersonalInformationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PersonalInformation'] = ResolversParentTypes['PersonalInformation']> = {
   DOB?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   firstName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  lastName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  jobTitle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  lastName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  organization?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {

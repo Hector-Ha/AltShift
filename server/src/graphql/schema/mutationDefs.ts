@@ -20,9 +20,10 @@ const mutationDefs = gql`
 
     # Collaborators
     addCollaborator(documentID: ID!, userID: ID!): Document! # Invite/Add
+    inviteCollaborator(documentID: ID!, email: String!): Document!
     removeCollaborator(documentID: ID!, userID: ID!): Document!
-    acceptCollaborateInvitation(documentID: ID!): Document!
-    declineCollaborateInvitation(documentID: ID!): Boolean!
+    acceptCollaborateInvitation(documentID: ID!, notificationID: ID): Document!
+    declineCollaborateInvitation(documentID: ID!, notificationID: ID): Boolean!
     leaveDocument(documentID: ID!): Boolean!
 
     # Ownership

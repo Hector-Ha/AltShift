@@ -48,7 +48,9 @@ const typeDefs = gql`
   #User
   type PersonalInformation {
     firstName: String!
-    lastName: String
+    lastName: String!
+    jobTitle: String
+    organization: String!
     DOB: DateTime
   }
 

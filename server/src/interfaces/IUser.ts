@@ -3,6 +3,8 @@ import { Types } from "mongoose";
 export interface IPersonalInformation {
   firstName: string;
   lastName?: string;
+  jobTitle?: string;
+  organization?: string;
   DOB?: Date;
   profilePicture?: string;
 }

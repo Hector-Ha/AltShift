@@ -9,7 +9,7 @@ export const onDisconnect = (socket: Socket, io: Server) => {
   socket.on(SOCKET_EVENTS.DISCONNECT, async () => {
     console.log(`Socket disconnected: ${socket.id}`);
 
-    // Handle Active Presence (Active Now)
+    // Broadcast active presence
     if (socket.data.documentID && socket.data.user) {
       const docId = socket.data.documentID;
       const user = socket.data.user;
@@ -38,7 +38,7 @@ export const onDisconnect = (socket: Socket, io: Server) => {
       }
     }
 
-    // Handle Unsaved Changes Notification
+    // Notify about unsaved changes
     if (
       socket.data.documentID &&
       socket.data.hasUnsavedChanges &&

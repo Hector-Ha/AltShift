@@ -168,8 +168,53 @@
 .filter-item:hover {
   background: #f9fafb;
 }
+/* ... existing code ... */
 .filter-item.active {
   background: #f3f4f6;
   font-weight: 500;
   color: #111827;
+}
+
+/* Invitation Actions */
+.invite-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.invite-btn {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.accept-btn {
+  background-color: #4f46e5; /* Indigo-600 */
+  color: white;
+}
+
+.accept-btn:hover {
+  background-color: #4338ca; /* Indigo-700 */
+}
+
+.reject-btn {
+  background-color: #f1f5f9; /* Slate-100 */
+  color: #475569; /* Slate-600 */
+  border-color: #e2e8f0;
+}
+
+.reject-btn:hover {
+  background-color: #e2e8f0; /* Slate-200 */
+  color: #334155;
+}
+
+.invite-status-msg {
+  font-size: 0.9rem;
+  color: #4b5563; /* Gray-600 */
+  font-style: italic;
+  display: block;
 }

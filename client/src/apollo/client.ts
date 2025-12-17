@@ -2,7 +2,7 @@ import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 
 const httpLink = createHttpLink({
-  // Use environment variable or fallback to localhost
+  // Environment variable or localhost fallback
   uri: import.meta.env.VITE_SERVER_URL
     ? `${import.meta.env.VITE_SERVER_URL}/graphql`
     : "http://localhost:4000/graphql",

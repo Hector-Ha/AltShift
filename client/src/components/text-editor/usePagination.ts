@@ -17,12 +17,11 @@ export const usePagination = (editor: Editor) => {
 };
 
 const normalizePagination = (editor: Editor) => {
-  // Use a loop to handle cascading overflows (Page 1 -> Page 2 -> Page 3)
-  // Limit passes to prevent infinite loops in case of stabilization issues.
+  // Handle cascading overflows
   let contentMoved = true;
   let passes = 0;
 
-  // Run this if find the DOM nodes.
+  // Ensure editor is mounted and has content
   if (!ReactEditor.isFocused(editor) && editor.children.length === 0) return;
 
   Editor.withoutNormalizing(editor, () => {
@@ -40,7 +39,6 @@ const normalizePagination = (editor: Editor) => {
         if (!SlateElement.isElement(pageNode)) continue;
 
         // Check for overflow
-        // Use a small epsilon to avoid jitter
         if (pageDom.scrollHeight > pageDom.clientHeight + 1) {
           // Overflow detected
           console.log(
@@ -57,11 +55,10 @@ const normalizePagination = (editor: Editor) => {
             const childNode = children[i];
             try {
               const domNode = ReactEditor.toDOMNode(editor, childNode);
-              // Check if child bottom is below page bottom
               const pageRect = pageDom.getBoundingClientRect();
               const childRect = domNode.getBoundingClientRect();
 
-              // Relative top of child from page top
+              // Check if child exceeds page bottom
               const relativeTop = childRect.top - pageRect.top;
 
               if (relativeTop + childRect.height > pageDom.clientHeight) {
@@ -89,11 +86,10 @@ const normalizePagination = (editor: Editor) => {
               });
             }
 
-            // Move all nodes from splitIndex to end
+            // Move overflowing nodes to next page
             const count = children.length - splitIndex;
 
-            // Move them one by one to the start of the next page so they end up PREPENDED before existing content on next page
-            // (e.g. if page 2 had content, and page 1 overflows, the overflow should go BEFORE page 2 content).
+            // Prepend nodes to next page
 
             for (let k = 0; k < count; k++) {
               Transforms.moveNodes(editor, {

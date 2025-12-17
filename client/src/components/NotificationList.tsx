@@ -45,10 +45,29 @@ const MARK_AS_READ = gql(`
   }
 `);
 
+const ACCEPT_INVITE = gql(`
+  mutation AcceptCollaborateInvitation($documentID: ID!, $notificationID: ID) {
+    acceptCollaborateInvitation(documentID: $documentID, notificationID: $notificationID) {
+      id
+      title
+    }
+  }
+`) as any;
+
+const DECLINE_INVITE = gql(`
+  mutation DeclineCollaborateInvitation($documentID: ID!, $notificationID: ID) {
+    declineCollaborateInvitation(documentID: $documentID, notificationID: $notificationID)
+  }
+`) as any;
+
 const NotificationList: React.FC = () => {
   const [activeSessions, setActiveSessions] = useState<any[]>([]);
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [showFilter, setShowFilter] = useState(false);
+
+  const [processedInvites, setProcessedInvites] = useState<
+    Record<string, "accepted" | "rejected">
+  >({});
 
   const { data, loading, error, refetch } = useQuery<
     MyNotificationsQuery,
@@ -61,6 +80,12 @@ const NotificationList: React.FC = () => {
     MarkNotificationAsReadMutation,
     MarkNotificationAsReadMutationVariables
   >(MARK_AS_READ);
+
+  const [acceptInvite] = useMutation(ACCEPT_INVITE, {
+    refetchQueries: ["GetDocuments"], // Refetch dashboard documents
+    awaitRefetchQueries: true,
+  });
+  const [declineInvite] = useMutation(DECLINE_INVITE);
 
   useEffect(() => {
     if (!socket.connected) socket.connect();
@@ -106,6 +131,59 @@ const NotificationList: React.FC = () => {
       refetch();
     } catch (err) {
       console.error("Error marking as read", err);
+    }
+  };
+
+  const handleAccept = async (e: React.MouseEvent, notification: any) => {
+    e.stopPropagation(); // Prevent triggering markAsRead from parent click
+    setProcessedInvites((prev) => ({ ...prev, [notification.id]: "accepted" }));
+    try {
+      if (!notification.document?.id) return;
+      await acceptInvite({
+        variables: {
+          documentID: notification.document.id,
+          notificationID: notification.id,
+        },
+      });
+      // Backend handles marking as read and message update
+      refetch();
+    } catch (err) {
+      console.error("Error accepting invitation", err);
+      // Revert optimistic update
+      setProcessedInvites((prev) => {
+        const newState = { ...prev };
+        delete newState[notification.id];
+        return newState;
+      });
+      // Fallback: try to mark as read if it failed (e.g. already accepted)
+      await markAsRead({ variables: { notificationId: notification.id } });
+      refetch();
+    }
+  };
+
+  const handleDecline = async (e: React.MouseEvent, notification: any) => {
+    e.stopPropagation();
+    setProcessedInvites((prev) => ({ ...prev, [notification.id]: "rejected" }));
+    try {
+      if (!notification.document?.id) return;
+      await declineInvite({
+        variables: {
+          documentID: notification.document.id,
+          notificationID: notification.id,
+        },
+      });
+      // Backend handles marking as read and message update
+      refetch();
+    } catch (err) {
+      console.error("Error declining invitation", err);
+      // Revert optimistic update
+      setProcessedInvites((prev) => {
+        const newState = { ...prev };
+        delete newState[notification.id];
+        return newState;
+      });
+      await markAsRead({ variables: { notificationId: notification.id } });
+      refetch();
     }
   };
 
@@ -221,6 +299,35 @@ const NotificationList: React.FC = () => {
                   </span>
                 </div>
                 <p className="notif-message">{notif.message}</p>
+
+                {/* Invitation Buttons */}
+                {notif.type === "DOCUMENT_INVITE" && !notif.read && (
+                  <div className="invite-actions">
+                    {processedInvites[notif.id] ? (
+                      <span className="invite-status-msg">
+                        {processedInvites[notif.id] === "accepted"
+                          ? `You have accepted invitation to edit ${notif.document?.title}`
+                          : `You have rejected invitation to edit ${notif.document?.title}`}
+                      </span>
+                    ) : (
+                      <>
+                        <button
+                          className="invite-btn accept-btn"
+                          onClick={(e) => handleAccept(e, notif)}
+                        >
+                          Let's Cook
+                        </button>
+                        <button
+                          className="invite-btn reject-btn"
+                          onClick={(e) => handleDecline(e, notif)}
+                        >
+                          Reject
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+
                 {!notif.read && <span className="unread-dot">●</span>}
               </li>
             ))}

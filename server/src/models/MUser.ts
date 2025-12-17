@@ -8,7 +8,9 @@ import {
 const personalInfoSchema = new Schema<IPersonalInformation>(
   {
     firstName: { type: String, required: true },
-    lastName: { type: String },
+    lastName: { type: String, required: true },
+    jobTitle: { type: String },
+    organization: { type: String, required: true },
     DOB: { type: Date },
     profilePicture: { type: String }, // URL
   },

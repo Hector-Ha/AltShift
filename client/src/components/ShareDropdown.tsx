@@ -29,10 +29,26 @@ const ShareDropdown: React.FC<ShareDropdownProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [updateVisibility, { loading }] = useMutation(
     UPDATE_DOCUMENT_VISIBILITY
+  );
+
+  const [inviteCollaborator, { loading: inviteLoading }] = useMutation(
+    gql(`
+      mutation InviteCollaborator($documentID: ID!, $email: String!) {
+        inviteCollaborator(documentID: $documentID, email: $email) {
+          id
+          visibility
+          invitations {
+            id
+          }
+        }
+      }
+    `)
   );
 
   useEffect(() => {
@@ -55,8 +71,7 @@ const ShareDropdown: React.FC<ShareDropdownProps> = ({
     if (status === currentVisibility) return;
 
     if (status === "SHARED") {
-      alert("Shared functionality coming soon!");
-
+      setShowInviteModal(true);
       return;
     }
 
@@ -86,6 +101,29 @@ const ShareDropdown: React.FC<ShareDropdownProps> = ({
     } catch (err) {
       console.error("Failed to update visibility", err);
       alert("Failed to update visibility");
+    }
+  };
+
+  const handleInviteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail) return;
+
+    try {
+      await inviteCollaborator({
+        variables: {
+          documentID: documentId,
+          email: inviteEmail,
+        },
+      });
+      alert(`Invitation sent to ${inviteEmail}`);
+      setInviteEmail("");
+      setShowInviteModal(false);
+      // The backend auto-switches to SHARED if it was PRIVATE
+      if (onVisibilityChange && currentVisibility === "PRIVATE") {
+        onVisibilityChange("SHARED");
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to send invitation");
     }
   };
 
@@ -182,6 +220,51 @@ const ShareDropdown: React.FC<ShareDropdownProps> = ({
                 Done
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showInviteModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-title">Invite Collaborator</h3>
+            <p>Enter the email address of the user you want to invite.</p>
+            <form onSubmit={handleInviteSubmit}>
+              <div className="link-copy-container">
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="link-input"
+                  placeholder="user@example.com"
+                  autoFocus
+                />
+              </div>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  onClick={() => setShowInviteModal(false)}
+                  className="modal-cancel-btn" // Verify css class exists or use existing style
+                  style={{
+                    marginRight: "10px",
+                    background: "#f0f0f0",
+                    color: "#333",
+                    border: "none",
+                    padding: "8px 16px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="modal-done-btn"
+                  disabled={inviteLoading}
+                >
+                  {inviteLoading ? "Sending..." : "Send Invite"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
