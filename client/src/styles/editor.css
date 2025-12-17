@@ -493,6 +493,29 @@
   text-overflow: ellipsis;
 }
 
+/* Document Not Found / Error State */
+.editor-error-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100%; /* Ensure it takes full height if possible */
+  padding: 2rem;
+  text-align: center;
+}
+
+.editor-error-link {
+  text-decoration: none;
+  margin-top: 20px;
+}
+
+/* Share Button Group */
+.share-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 .active-text {
   font-size: 0.7rem;
   color: #10b981; /* Green-500 */

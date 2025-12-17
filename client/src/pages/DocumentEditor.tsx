@@ -393,21 +393,10 @@ const DocumentEditor: React.FC = () => {
   if (error) return <div>Error: {error.message}</div>;
   if (!data?.getDocumentByID) {
     return (
-      <div
-        className="editor-page"
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "column",
-        }}
-      >
+      <div className="editor-error-page">
         <h2>Document Not Found</h2>
         <p>This document may have been deleted or does not exist.</p>
-        <Link
-          to="/dashboard"
-          className="save-btn"
-          style={{ textDecoration: "none", marginTop: "20px" }}
-        >
+        <Link to="/dashboard" className="save-btn editor-error-link">
           Back to Dashboard
         </Link>
       </div>
@@ -519,9 +508,8 @@ const DocumentEditor: React.FC = () => {
             {data?.getDocumentByID && !isArchived && (
               <>
                 <button
-                  className="share-btn"
+                  className="share-btn share-btn-group"
                   onClick={() => setShowShareDialog(true)}
-                  style={{ display: "flex", alignItems: "center", gap: "5px" }}
                 >
                   <span className="material-icons">share</span>
                   Share

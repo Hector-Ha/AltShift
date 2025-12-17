@@ -189,7 +189,7 @@ const Dashboard: React.FC = () => {
                   ? `${user.personalInformation.firstName} ${user.personalInformation.lastName}`
                   : "User"}
               </span>
-              <span className="material-icons" style={{ fontSize: "16px" }}>
+              <span className="material-icons profile-trigger-icon">
                 expand_more
               </span>
             </button>

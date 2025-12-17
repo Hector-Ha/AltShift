@@ -4,8 +4,7 @@ import { useQuery, useMutation } from "@apollo/client/react";
 import { gql } from "@apollo/client";
 import Logo from "../components/Logo";
 import "../styles/dashboard.css";
-// We might keep profile.css for specific tweaks if needed, but aim to use dashboard styles
-// import "../styles/profile.css";
+import "../styles/profile.css";
 
 const GET_USER_PROFILE = gql(`
   query GetUserProfile($id: ID!) {
@@ -210,15 +209,7 @@ const Profile: React.FC = () => {
           <span>AltShift</span>
         </div>
         <div className="nav-actions">
-          <Link
-            to="/dashboard"
-            className="btn"
-            style={{
-              textDecoration: "none",
-              color: "#64748b",
-              marginRight: "1rem",
-            }}
-          >
+          <Link to="/dashboard" className="btn nav-back-link">
             Back to Dashboard
           </Link>
         </div>
@@ -232,34 +223,18 @@ const Profile: React.FC = () => {
             {" "}
             {/* Reusing doc list styles for sidebar items */}
             <button
-              className={`doc-item ${
+              className={`doc-item profile-nav-btn ${
                 activeSection === "personal" ? "active" : ""
               }`}
               onClick={() => setActiveSection("personal")}
-              style={{
-                border: "none",
-                background:
-                  activeSection === "personal" ? "#e0e7ff" : "transparent",
-                width: "100%",
-                textAlign: "left",
-                cursor: "pointer",
-              }}
             >
               Personal Information
             </button>
             <button
-              className={`doc-item ${
+              className={`doc-item profile-nav-btn ${
                 activeSection === "security" ? "active" : ""
               }`}
               onClick={() => setActiveSection("security")}
-              style={{
-                border: "none",
-                background:
-                  activeSection === "security" ? "#e0e7ff" : "transparent",
-                width: "100%",
-                textAlign: "left",
-                cursor: "pointer",
-              }}
             >
               Security
             </button>
@@ -267,38 +242,23 @@ const Profile: React.FC = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="dashboard-content" style={{ maxWidth: "800px" }}>
+        <main className="dashboard-content profile-main-content">
           {" "}
           {/* Limit width for readability */}
           {activeSection === "personal" && (
             <section>
-              <div className="home-header-row" style={{ marginBottom: "1rem" }}>
+              <div className="home-header-row profile-header-row">
                 <div>
                   <h2 className="home-title">Personal Information</h2>
-                  <p style={{ color: "#64748b", marginTop: "0.5rem" }}>
+                  <p className="profile-header-desc">
                     Manage your personal details and contact info.
                   </p>
                 </div>
               </div>
 
-              <div
-                style={{
-                  backgroundColor: "white",
-                  padding: "2rem",
-                  borderRadius: "12px",
-                  border: "1px solid #e2e8f0",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-                }}
-              >
+              <div className="profile-card">
                 <form onSubmit={handleProfileSubmit}>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "1rem",
-                      marginBottom: "1rem",
-                    }}
-                  >
+                  <div className="profile-grid-row">
                     <div className="form-group">
                       <label className="form-label">First Name</label>
                       <input
@@ -328,14 +288,7 @@ const Profile: React.FC = () => {
                     </div>
                   </div>
 
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "1rem",
-                      marginBottom: "1rem",
-                    }}
-                  >
+                  <div className="profile-grid-row">
                     <div className="form-group">
                       <label className="form-label">Job Title</label>
                       <input
@@ -364,14 +317,7 @@ const Profile: React.FC = () => {
                     </div>
                   </div>
 
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "1rem",
-                      marginBottom: "1.5rem",
-                    }}
-                  >
+                  <div className="profile-grid-row mb-large">
                     <div className="form-group">
                       <label className="form-label">Date of Birth</label>
                       <input
@@ -387,23 +333,11 @@ const Profile: React.FC = () => {
                       <label className="form-label">Email Address</label>
                       <input
                         type="email"
-                        className="form-input"
+                        className="form-input profile-input-disabled"
                         value={data?.getUserByID?.email || ""}
                         disabled
-                        style={{
-                          backgroundColor: "#f1f5f9",
-                          cursor: "not-allowed",
-                          color: "#64748b",
-                        }}
                       />
-                      <small
-                        style={{
-                          color: "#94a3b8",
-                          marginTop: "4px",
-                          display: "block",
-                          fontSize: "0.75rem",
-                        }}
-                      >
+                      <small className="profile-input-hint">
                         Email cannot be changed directly.
                       </small>
                     </div>
@@ -411,27 +345,15 @@ const Profile: React.FC = () => {
 
                   {profileMessage && (
                     <div
-                      style={{
-                        padding: "0.75rem",
-                        borderRadius: "6px",
-                        marginBottom: "1rem",
-                        backgroundColor:
-                          profileMessage.type === "error"
-                            ? "#fef2f2"
-                            : "#f0fdf4",
-                        color:
-                          profileMessage.type === "error"
-                            ? "#ef4444"
-                            : "#10b981",
-                        fontSize: "0.875rem",
-                        fontWeight: 500,
-                      }}
+                      className={`profile-message ${
+                        profileMessage.type === "error" ? "error" : "success"
+                      }`}
                     >
                       {profileMessage.text}
                     </div>
                   )}
 
-                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <div className="profile-actions">
                     <button
                       type="submit"
                       className="btn btn-primary"
@@ -446,24 +368,16 @@ const Profile: React.FC = () => {
           )}
           {activeSection === "security" && (
             <section>
-              <div className="home-header-row" style={{ marginBottom: "1rem" }}>
+              <div className="home-header-row profile-header-row">
                 <div>
                   <h2 className="home-title">Security</h2>
-                  <p style={{ color: "#64748b", marginTop: "0.5rem" }}>
+                  <p className="profile-header-desc">
                     Update your password and security settings.
                   </p>
                 </div>
               </div>
 
-              <div
-                style={{
-                  backgroundColor: "white",
-                  padding: "2rem",
-                  borderRadius: "12px",
-                  border: "1px solid #e2e8f0",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-                }}
-              >
+              <div className="profile-card">
                 <form onSubmit={handlePasswordSubmit}>
                   <div className="form-group">
                     <label className="form-label">Current Password</label>
@@ -481,21 +395,9 @@ const Profile: React.FC = () => {
                     />
                   </div>
 
-                  <div
-                    style={{
-                      borderTop: "1px solid #e2e8f0",
-                      margin: "1.5rem 0",
-                    }}
-                  ></div>
+                  <div className="profile-divider"></div>
 
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "1rem",
-                      marginBottom: "1.5rem",
-                    }}
-                  >
+                  <div className="profile-grid-row mb-large">
                     <div className="form-group">
                       <label className="form-label">New Password</label>
                       <input
@@ -532,27 +434,15 @@ const Profile: React.FC = () => {
 
                   {passwordMessage && (
                     <div
-                      style={{
-                        padding: "0.75rem",
-                        borderRadius: "6px",
-                        marginBottom: "1rem",
-                        backgroundColor:
-                          passwordMessage.type === "error"
-                            ? "#fef2f2"
-                            : "#f0fdf4",
-                        color:
-                          passwordMessage.type === "error"
-                            ? "#ef4444"
-                            : "#10b981",
-                        fontSize: "0.875rem",
-                        fontWeight: 500,
-                      }}
+                      className={`profile-message ${
+                        passwordMessage.type === "error" ? "error" : "success"
+                      }`}
                     >
                       {passwordMessage.text}
                     </div>
                   )}
 
-                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <div className="profile-actions">
                     <button
                       type="submit"
                       className="btn btn-primary"

@@ -1,0 +1,11 @@
+.slate-image-wrapper {
+  display: block;
+  max-width: 100%;
+  max-height: 20em;
+}
+
+.slate-video-wrapper {
+  display: block;
+  max-width: 100%;
+  max-height: 20em;
+}

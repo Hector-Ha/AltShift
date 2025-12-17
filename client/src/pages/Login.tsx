@@ -91,15 +91,8 @@ const Login: React.FC = () => {
               />
             </div>
 
-            <div style={{ textAlign: "right" }}>
-              <Link
-                to="/forgot-password"
-                style={{
-                  fontSize: "0.875rem",
-                  color: "#4f46e5",
-                  textDecoration: "none",
-                }}
-              >
+            <div className="forgot-password-container">
+              <Link to="/forgot-password" className="forgot-password-link">
                 Forgot Password?
               </Link>
             </div>
