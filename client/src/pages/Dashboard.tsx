@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client/react";
+import { gql } from "@apollo/client";
 import { Link, useNavigate } from "react-router-dom";
-import { gql } from "../gql";
 import Logo from "../components/Logo";
 import type {
   GetDocumentsQuery,
@@ -49,12 +49,36 @@ const CREATE_DOCUMENT_WITH_AI = gql(`
   }
 `);
 
+const GET_USER_HEADER = gql(`
+  query GetUserHeader($id: ID!) {
+    getUserByID(id: $id) {
+      id
+      personalInformation {
+        firstName
+        lastName
+      }
+      profilePicture
+    }
+  }
+`);
+
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<"ACTIVE" | "ARCHIVED">("ACTIVE");
   const [filter, setFilter] = useState("RECENTS");
   const [search, setSearch] = useState("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const userId = localStorage.getItem("userId");
+
+  const { data: userData } = useQuery<any>(GET_USER_HEADER, {
+    variables: { id: userId || "" },
+    skip: !userId,
+  });
+
+  const user = userData?.getUserByID;
+  const initials = user?.personalInformation
+    ? `${user.personalInformation.firstName[0]}${user.personalInformation.lastName[0]}`
+    : "U";
 
   const { data, loading, error, refetch } = useQuery<
     GetDocumentsQuery,
@@ -148,9 +172,48 @@ const Dashboard: React.FC = () => {
           <span>AltShift</span>
         </div>
         <div className="nav-actions">
-          <button className="btn" onClick={handleLogout}>
-            Logout
-          </button>
+          <div className="profile-menu-container">
+            <button
+              className="profile-trigger"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              <div className="profile-avatar">
+                {user?.profilePicture ? (
+                  <img src={user.profilePicture} alt="Profile" />
+                ) : (
+                  initials
+                )}
+              </div>
+              <span className="profile-name">
+                {user?.personalInformation
+                  ? `${user.personalInformation.firstName} ${user.personalInformation.lastName}`
+                  : "User"}
+              </span>
+              <span className="material-icons" style={{ fontSize: "16px" }}>
+                expand_more
+              </span>
+            </button>
+
+            {isMenuOpen && (
+              <div className="profile-dropdown">
+                <button
+                  className="profile-dropdown-item"
+                  onClick={() => navigate("/profile")}
+                >
+                  <span className="material-icons">person</span>
+                  Profile
+                </button>
+                <div className="profile-dropdown-divider" />
+                <button
+                  className="profile-dropdown-item"
+                  onClick={handleLogout}
+                >
+                  <span className="material-icons">logout</span>
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </nav>
 

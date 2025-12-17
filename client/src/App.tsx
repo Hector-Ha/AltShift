@@ -10,6 +10,7 @@ import DocumentEditor from "./pages/DocumentEditor";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import Profile from "./pages/Profile";
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -26,6 +27,7 @@ const App: React.FC = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/doc/:id" element={<DocumentEditor />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

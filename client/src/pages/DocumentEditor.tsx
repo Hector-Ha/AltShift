@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "@apollo/client/react";
 import { socket } from "../socket/socket";
 import SlateEditor from "../components/text-editor/SlateEditor";
 import "../styles/editor.css";
-import ShareDropdown from "../components/ShareDropdown";
+import ShareDialog from "../components/ShareDialog";
 import ArchiveModal from "../components/ArchiveModal";
 import { format, differenceInDays } from "date-fns";
 
@@ -41,18 +41,6 @@ const GET_DOCUMENT = gql(`
           firstName
           lastName
         }
-      }
-    }
-  }
-`);
-
-const INVITE_COLLABORATOR = gql(`
-  mutation InviteCollaborator($documentID: ID!, $email: String!) {
-    inviteCollaborator(documentID: $documentID, email: $email) {
-      id
-      visibility
-      invitations {
-        id
       }
     }
   }
@@ -136,13 +124,8 @@ const DocumentEditor: React.FC = () => {
   const [unarchive] = useMutation(UNARCHIVE_DOCUMENT);
   const [cancelDeletion] = useMutation(CANCEL_SCHEDULED_DELETION);
   const [hardDelete] = useMutation(DELETE_DOCUMENT_IMMEDIATELY);
-  const [inviteCollaborator, { loading: inviteLoading }] =
-    useMutation(INVITE_COLLABORATOR);
-
   // Invite & Share State
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [showPrivateWarning, setShowPrivateWarning] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   // Collaborators
   const [collaboratorList, setCollaboratorList] = useState<any[]>([]);
@@ -405,39 +388,6 @@ const DocumentEditor: React.FC = () => {
     }
   };
 
-  const handleInviteClick = () => {
-    if (data?.getDocumentByID?.visibility === "PRIVATE") {
-      setShowPrivateWarning(true);
-    } else {
-      setShowInviteModal(true);
-    }
-  };
-
-  const handlePrivateWarningConfirm = () => {
-    setShowPrivateWarning(false);
-    setShowInviteModal(true);
-  };
-
-  const handleInviteSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteEmail) return;
-
-    try {
-      await inviteCollaborator({
-        variables: {
-          documentID: id!,
-          email: inviteEmail,
-        },
-      });
-      alert(`Invitation sent to ${inviteEmail}`);
-      setInviteEmail("");
-      setShowInviteModal(false);
-      refetch(); // Refresh to update collaborators list or visibility status
-    } catch (err: any) {
-      alert(err.message || "Failed to send invitation");
-    }
-  };
-
   if (!id) return <div>Error: No Document ID provided</div>;
   if (loading) return <div>Loading Doc...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -472,89 +422,6 @@ const DocumentEditor: React.FC = () => {
         onConfirm={handleArchiveConfirm}
         title={title}
       />
-
-      {/* Invite Modal */}
-      {showInviteModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3 className="modal-title">Invite Collaborator</h3>
-            <p>Enter the email address of the user you want to invite.</p>
-            <form onSubmit={handleInviteSubmit}>
-              <div className="link-copy-container">
-                <input
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  className="link-input"
-                  placeholder="user@example.com"
-                  autoFocus
-                />
-              </div>
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  onClick={() => setShowInviteModal(false)}
-                  className="modal-cancel-btn"
-                  style={{
-                    marginRight: "10px",
-                    background: "#f0f0f0",
-                    color: "#333",
-                    border: "none",
-                    padding: "8px 16px",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="modal-done-btn"
-                  disabled={inviteLoading}
-                >
-                  {inviteLoading ? "Sending..." : "Send Invite"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Private to Shared Warning Modal */}
-      {showPrivateWarning && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3 className="modal-title">Change Visibility?</h3>
-            <p style={{ marginBottom: "20px" }}>
-              This would change document from <strong>"Private"</strong> to{" "}
-              <strong>"Shared"</strong>. Do you want to proceed?
-            </p>
-            <div className="modal-actions">
-              <button
-                onClick={() => setShowPrivateWarning(false)}
-                className="modal-cancel-btn"
-                style={{
-                  marginRight: "10px",
-                  background: "#f0f0f0",
-                  color: "#333",
-                  border: "none",
-                  padding: "8px 16px",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handlePrivateWarningConfirm}
-                className="modal-done-btn"
-              >
-                Proceed
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="editor-main">
         {isArchived && (
@@ -650,14 +517,25 @@ const DocumentEditor: React.FC = () => {
             )}
 
             {data?.getDocumentByID && !isArchived && (
-              <ShareDropdown
-                documentId={id!}
-                currentVisibility={data.getDocumentByID.visibility as any}
-                isOwner={
-                  data.getDocumentByID.owner?.id ===
-                  localStorage.getItem("userId")
-                }
-              />
+              <>
+                <button
+                  className="share-btn"
+                  onClick={() => setShowShareDialog(true)}
+                  style={{ display: "flex", alignItems: "center", gap: "5px" }}
+                >
+                  <span className="material-icons">share</span>
+                  Share
+                </button>
+
+                <ShareDialog
+                  isOpen={showShareDialog}
+                  onClose={() => setShowShareDialog(false)}
+                  documentId={id!}
+                  currentVisibility={data.getDocumentByID.visibility as any}
+                  isOwner={isOwner}
+                  onVisibilityChange={() => refetch()}
+                />
+              </>
             )}
 
             {isOwner && !isArchived && (
@@ -688,7 +566,7 @@ const DocumentEditor: React.FC = () => {
           <div className="sidebar-header">Collaborators</div>
           <button
             className="invite-icon-btn"
-            onClick={handleInviteClick}
+            onClick={() => setShowShareDialog(true)}
             title="Invite People"
             disabled={!!isArchived}
           >

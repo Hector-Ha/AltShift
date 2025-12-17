@@ -65,10 +65,6 @@ const NotificationList: React.FC = () => {
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [showFilter, setShowFilter] = useState(false);
 
-  const [processedInvites, setProcessedInvites] = useState<
-    Record<string, "accepted" | "rejected">
-  >({});
-
   const { data, loading, error, refetch } = useQuery<
     MyNotificationsQuery,
     MyNotificationsQueryVariables
@@ -135,8 +131,7 @@ const NotificationList: React.FC = () => {
   };
 
   const handleAccept = async (e: React.MouseEvent, notification: any) => {
-    e.stopPropagation(); // Prevent triggering markAsRead from parent click
-    setProcessedInvites((prev) => ({ ...prev, [notification.id]: "accepted" }));
+    e.stopPropagation();
     try {
       if (!notification.document?.id) return;
       await acceptInvite({
@@ -145,17 +140,10 @@ const NotificationList: React.FC = () => {
           notificationID: notification.id,
         },
       });
-      // Backend handles marking as read and message update
       refetch();
     } catch (err) {
       console.error("Error accepting invitation", err);
-      // Revert optimistic update
-      setProcessedInvites((prev) => {
-        const newState = { ...prev };
-        delete newState[notification.id];
-        return newState;
-      });
-      // Fallback: try to mark as read if it failed (e.g. already accepted)
+      // Try to mark as read if it failed (e.g. already accepted)
       await markAsRead({ variables: { notificationId: notification.id } });
       refetch();
     }
@@ -163,7 +151,6 @@ const NotificationList: React.FC = () => {
 
   const handleDecline = async (e: React.MouseEvent, notification: any) => {
     e.stopPropagation();
-    setProcessedInvites((prev) => ({ ...prev, [notification.id]: "rejected" }));
     try {
       if (!notification.document?.id) return;
       await declineInvite({
@@ -172,16 +159,9 @@ const NotificationList: React.FC = () => {
           notificationID: notification.id,
         },
       });
-      // Backend handles marking as read and message update
       refetch();
     } catch (err) {
       console.error("Error declining invitation", err);
-      // Revert optimistic update
-      setProcessedInvites((prev) => {
-        const newState = { ...prev };
-        delete newState[notification.id];
-        return newState;
-      });
       await markAsRead({ variables: { notificationId: notification.id } });
       refetch();
     }
@@ -303,28 +283,18 @@ const NotificationList: React.FC = () => {
                 {/* Invitation Buttons */}
                 {notif.type === "DOCUMENT_INVITE" && !notif.read && (
                   <div className="invite-actions">
-                    {processedInvites[notif.id] ? (
-                      <span className="invite-status-msg">
-                        {processedInvites[notif.id] === "accepted"
-                          ? `You have accepted invitation to edit ${notif.document?.title}`
-                          : `You have rejected invitation to edit ${notif.document?.title}`}
-                      </span>
-                    ) : (
-                      <>
-                        <button
-                          className="invite-btn accept-btn"
-                          onClick={(e) => handleAccept(e, notif)}
-                        >
-                          Let's Cook
-                        </button>
-                        <button
-                          className="invite-btn reject-btn"
-                          onClick={(e) => handleDecline(e, notif)}
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
+                    <button
+                      className="invite-btn accept-btn"
+                      onClick={(e) => handleAccept(e, notif)}
+                    >
+                      Let's Cook
+                    </button>
+                    <button
+                      className="invite-btn reject-btn"
+                      onClick={(e) => handleDecline(e, notif)}
+                    >
+                      Reject
+                    </button>
                   </div>
                 )}
 
