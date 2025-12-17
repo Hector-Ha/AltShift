@@ -67,6 +67,22 @@ const documentSchema = new Schema<IDocument>(
     deletedAt: {
       type: Date,
     },
+
+    isArchived: {
+      type: Boolean,
+      default: false,
+    },
+    archivedAt: {
+      type: Date,
+    },
+    archiveType: {
+      type: String,
+      enum: ["MANUAL", "SCHEDULED"],
+    },
+    scheduledDeletionTime: {
+      type: Date,
+      index: { expireAfterSeconds: 0 },
+    },
   },
   // Adds createdAt and updatedAt
   { timestamps: true }

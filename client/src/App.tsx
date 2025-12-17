@@ -7,6 +7,9 @@ import { socket } from "./socket/socket";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import DocumentEditor from "./pages/DocumentEditor";
+import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -19,6 +22,9 @@ const App: React.FC = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/doc/:id" element={<DocumentEditor />} />
         <Route path="*" element={<Navigate to="/" />} />

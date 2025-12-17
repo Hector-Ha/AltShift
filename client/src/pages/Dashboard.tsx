@@ -17,8 +17,8 @@ import RichTextPrompt from "../components/RichTextPrompt";
 import "../styles/dashboard.css";
 
 const GET_DOCUMENTS = gql(`
-  query GetDocuments {
-    getDocuments(filter: {}) {
+  query GetDocuments($filter: DocumentFilterInput) {
+    getDocuments(filter: $filter) {
       id
       title
       updatedAt
@@ -51,16 +51,22 @@ const CREATE_DOCUMENT_WITH_AI = gql(`
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [viewMode, setViewMode] = useState<"ACTIVE" | "ARCHIVED">("ACTIVE");
+  const [filter, setFilter] = useState("RECENTS");
+  const [search, setSearch] = useState("");
+  const userId = localStorage.getItem("userId");
+
   const { data, loading, error, refetch } = useQuery<
     GetDocumentsQuery,
     GetDocumentsQueryVariables
   >(GET_DOCUMENTS, {
+    variables: {
+      filter: {
+        isArchived: viewMode === "ARCHIVED",
+      },
+    },
     fetchPolicy: "network-only",
   });
-
-  const [filter, setFilter] = useState("RECENTS");
-  const [search, setSearch] = useState("");
-  const userId = localStorage.getItem("userId");
 
   const [createDocument] = useMutation<
     CreateDocumentMutation,
@@ -184,7 +190,20 @@ const Dashboard: React.FC = () => {
           </div>
 
           <section>
-            <h3 className="section-title">Documents</h3>
+            <div className="section-tabs">
+              <button
+                className={`tab-btn ${viewMode === "ACTIVE" ? "active" : ""}`}
+                onClick={() => setViewMode("ACTIVE")}
+              >
+                Documents
+              </button>
+              <button
+                className={`tab-btn ${viewMode === "ARCHIVED" ? "active" : ""}`}
+                onClick={() => setViewMode("ARCHIVED")}
+              >
+                Archived
+              </button>
+            </div>
             <div className="documents-list">
               {filteredDocuments?.map(
                 (doc: GetDocumentsQuery["getDocuments"][0]) => (

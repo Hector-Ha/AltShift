@@ -25,6 +25,7 @@ const inputDefs = gql`
     isOwned: Boolean
     isCollaborating: Boolean
     isFavorite: Boolean
+    isArchived: Boolean
     search: String # Title or Content
   }
 
@@ -64,8 +65,7 @@ const inputDefs = gql`
   }
 
   input resetPasswordInput {
-    email: String!
-    # verificationCode: String! # For future implementation
+    token: String!
     newPassword: String!
   }
 `;

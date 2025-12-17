@@ -325,6 +325,98 @@ const documentMutationResolvers: MutationResolvers = {
     return true;
   },
 
+  // Archiving
+  archiveDocument: async (
+    _,
+    { documentID, type, removeCollaborators },
+    context
+  ) => {
+    if (!context.user) throw new Error("Not Authenticated");
+    const document = await DocumentModel.findById(documentID);
+    if (!document) throw new Error("Document not found");
+    if (document.owner.toString() !== context.user._id.toString())
+      throw new Error("Only the owner can archive this document");
+
+    document.isArchived = true;
+    document.archivedAt = new Date();
+    document.archiveType = type;
+
+    if (type === "SCHEDULED") {
+      const deletionDate = new Date();
+      deletionDate.setDate(deletionDate.getDate() + 30);
+      document.scheduledDeletionTime = deletionDate;
+    } else {
+      document.scheduledDeletionTime = undefined;
+    }
+
+    if (removeCollaborators) {
+      const collaborators = [...document.collaborators];
+      document.collaborators = [];
+      document.invitations = []; // Also clear pending invitations
+
+      // Notify removed collaborators
+      const uniqueRecipients = [
+        ...new Set(collaborators.map((id) => id.toString())),
+      ];
+      if (uniqueRecipients.length > 0) {
+        const notifications = uniqueRecipients.map((recipientId) => ({
+          recipient: new Types.ObjectId(recipientId),
+          sender: context.user._id,
+          type: NotificationType.DOCUMENT_UPDATE,
+          document: document._id,
+          message: `The document "${document.title}" has been archived and you have been removed as a collaborator.`,
+          read: false,
+          createdAt: new Date(),
+        }));
+        await NotificationModel.insertMany(notifications);
+      }
+    }
+
+    await document.save();
+    return document;
+  },
+
+  unarchiveDocument: async (_, { documentID }, context) => {
+    if (!context.user) throw new Error("Not Authenticated");
+    const document = await DocumentModel.findById(documentID);
+    if (!document) throw new Error("Document not found");
+    if (document.owner.toString() !== context.user._id.toString())
+      throw new Error("Not Authorized");
+
+    document.isArchived = false;
+    document.archivedAt = undefined;
+    document.archiveType = undefined;
+    document.scheduledDeletionTime = undefined;
+
+    await document.save();
+    return document;
+  },
+
+  cancelScheduledDeletion: async (_, { documentID }, context) => {
+    if (!context.user) throw new Error("Not Authenticated");
+    const document = await DocumentModel.findById(documentID);
+    if (!document) throw new Error("Document not found");
+    if (document.owner.toString() !== context.user._id.toString())
+      throw new Error("Not Authorized");
+
+    document.scheduledDeletionTime = undefined;
+    document.archiveType = "MANUAL"; // Revert to manual archive
+
+    await document.save();
+    return document;
+  },
+
+  deleteDocumentImmediately: async (_, { documentID }, context) => {
+    if (!context.user) throw new Error("Not Authenticated");
+    const document = await DocumentModel.findById(documentID);
+    if (!document) throw new Error("Document not found");
+    if (document.owner.toString() !== context.user._id.toString())
+      throw new Error("Not Authorized");
+
+    await DocumentModel.findByIdAndDelete(documentID);
+    return true;
+  },
+
   // Collaboration
   addCollaborator: async (_, { documentID, userID }, context) => {
     if (!context.user) throw new Error("Not Authenticated");

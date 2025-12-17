@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
 import { MutationResolvers } from "../../../generated/graphql.js";
+import crypto from "crypto";
+import { sendEmail } from "../../../utils/emailService.js";
 
 import { IPersonalInformation, IUser } from "../../../interfaces/IUser.js";
 
@@ -90,15 +92,44 @@ const userMutationResolvers: MutationResolvers = {
     return true;
   },
 
-  resetPassword: async (_parent, { input }) => {
-    const user = await UserModel.findOne({ email: input.email });
-    if (!user) return true; //don't reveal user existence
+  forgotPassword: async (_parent, { email }) => {
+    const user = await UserModel.findOne({ email });
+    if (!user) return true; // Security: don't reveal existence
 
-    // TODO: Send email with token.
-    // For now, allow password reset directly if we trust the input logic (e.g. from validated flow)
-    // The input has `newPassword`.
+    const token = crypto.randomBytes(20).toString("hex");
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
+
+    await user.save();
+
+    const resetUrl = `http://localhost:5173/reset-password?token=${token}`;
+
+    await sendEmail({
+      to: email,
+      subject: "Password Reset Request",
+      title: "Reset Your Password",
+      message:
+        "You are receiving this because you (or someone else) have requested the reset of the password for your account. Please click the button below to complete the process.",
+      actionLink: resetUrl,
+      actionText: "Reset Password",
+    });
+
+    return true;
+  },
+
+  resetPassword: async (_parent, { input }) => {
+    const user = await UserModel.findOne({
+      resetPasswordToken: input.token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user)
+      throw new Error("Password reset token is invalid or has expired.");
 
     user.password = await bcrypt.hash(input.newPassword, 12);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
     await user.save();
 
     return true;

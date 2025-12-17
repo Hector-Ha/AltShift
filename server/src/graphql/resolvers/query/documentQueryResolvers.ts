@@ -49,13 +49,17 @@ const documentQueryResolvers: QueryResolvers = {
 
     // Status
     if (filter?.status) criteria.visibility = filter.status;
-    if (filter?.isFavorite) {
-      // This is hard because favorite is on User model.
-      // We'd need to fetch User favorites first.
-      const user = await context.UserModel.findById(context.user._id);
-      if (user) {
-        criteria._id = { $in: user.isFavorite };
-      }
+
+    // Filter Favorites
+    if (filter?.isFavorite && context.user.isFavorite) {
+      criteria._id = { $in: context.user.isFavorite };
+    }
+
+    // Archive Filter
+    if (typeof filter?.isArchived === "boolean") {
+      criteria.isArchived = filter.isArchived;
+    } else {
+      criteria.isArchived = { $ne: true };
     }
 
     // Search

@@ -19,6 +19,11 @@ const typeDefs = gql`
     createdAt: DateTime!
     updatedAt: DateTime!
     deletedAt: DateTime
+
+    isArchived: Boolean
+    archivedAt: DateTime
+    archiveType: ArchiveType
+    scheduledDeletionTime: DateTime
   }
 
   type DocumentVersion {
@@ -33,6 +38,11 @@ const typeDefs = gql`
     PUBLIC
     SHARED
     PRIVATE
+  }
+
+  enum ArchiveType {
+    MANUAL
+    SCHEDULED
   }
 
   #User

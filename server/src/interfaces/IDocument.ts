@@ -20,4 +20,9 @@ export interface IDocument {
   createdAt: Date;
   updatedAt: Date;
   deletedAt?: Date;
+
+  isArchived?: boolean;
+  archivedAt?: Date;
+  archiveType?: "MANUAL" | "SCHEDULED";
+  scheduledDeletionTime?: Date;
 }

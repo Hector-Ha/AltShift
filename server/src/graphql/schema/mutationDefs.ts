@@ -39,6 +39,16 @@ const mutationDefs = gql`
     # Permanent delete
     hardDeleteDocument(documentID: ID!): Boolean!
 
+    # Archiving
+    archiveDocument(
+      documentID: ID!
+      type: ArchiveType!
+      removeCollaborators: Boolean!
+    ): Document!
+    unarchiveDocument(documentID: ID!): Document!
+    cancelScheduledDeletion(documentID: ID!): Document!
+    deleteDocumentImmediately(documentID: ID!): Boolean!
+
     # Duplication
     duplicateDocument(documentID: ID!): Document!
 
@@ -58,6 +68,7 @@ const mutationDefs = gql`
     login(email: String!, password: String!): AuthPayload!
     logout: Boolean!
     changePassword(userID: ID!, input: changePasswordInput!): Boolean!
+    forgotPassword(email: String!): Boolean!
     resetPassword(input: resetPasswordInput!): Boolean!
     verifyEmail(token: String!): Boolean!
 

@@ -55,6 +55,12 @@ const userSchema = new Schema<IUser>(
     deletedAt: {
       type: Date,
     },
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpires: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );
