@@ -35,6 +35,7 @@ const documentMutationResolvers: MutationResolvers = {
     let contextText = "";
     if (attachments && attachments.length > 0) {
       for (const file of attachments) {
+        if (!file) continue;
         try {
           // content is base64 string
           const buffer = Buffer.from(file.content, "base64");
@@ -453,6 +454,65 @@ const documentMutationResolvers: MutationResolvers = {
     return document;
   },
 
+  inviteCollaborator: async (_, { documentID, email }, context) => {
+    if (!context.user) throw new Error("Not Authenticated");
+    const document = await DocumentModel.findById(documentID);
+    if (!document) throw new Error("Document not found");
+    if (document.owner.toString() !== context.user._id.toString())
+      throw new Error("Not Authorized");
+
+    const userToInvite = await UserModel.findOne({ email });
+    if (!userToInvite) throw new Error("User not found");
+
+    const userID = userToInvite._id.toString();
+
+    // Check if already invited or collaborator
+    if (document.collaborators.some((c) => c.toString() === userID))
+      return document;
+    if (document.invitations.some((i) => i.toString() === userID))
+      return document;
+
+    document.invitations.push(userToInvite._id);
+
+    // If Private, switch to Shared
+    if (document.visibility === "PRIVATE") {
+      document.visibility = "SHARED";
+      document.isPublic = false;
+    }
+
+    await document.save();
+
+    // Create Notification
+    await NotificationModel.create({
+      recipient: userToInvite._id,
+      sender: context.user._id,
+      type: NotificationType.DOCUMENT_INVITE,
+      document: document._id,
+      message: `${context.user.email} invited you to edit "${document.title}"`,
+      read: false,
+    });
+
+    // Send Email
+    const { sendEmail } = await import("../../../utils/emailService.js");
+    await sendEmail({
+      to: email,
+      subject: `Invitation to collaborate on "${document.title}"`,
+      title: "You've been invited!",
+      message: `${
+        context.user.firstName || context.user.email
+      } has invited you to collaborate on the document "${
+        document.title
+      }". Click the button below to open the document and start collaborating.`,
+      actionLink: `${process.env.CLIENT_URL || "http://localhost:5173"}/doc/${
+        document._id
+      }`,
+      actionText: "Open Document",
+      templateName: "inviteEmailTemplate.html",
+    });
+
+    return document;
+  },
+
   removeCollaborator: async (_, { documentID, userID }, context) => {
     if (!context.user) throw new Error("Not Authenticated");
     const document = await DocumentModel.findById(documentID);
@@ -483,7 +543,12 @@ const documentMutationResolvers: MutationResolvers = {
     document.invitations = document.invitations.filter(
       (id) => id.toString() !== userId.toString()
     );
-    document.collaborators.push(userId);
+
+    // Explicitly cast and mark modified
+    document.collaborators.push(new Types.ObjectId(userId));
+    document.markModified("collaborators");
+    document.markModified("invitations");
+
     await document.save();
     return document;
   },

@@ -386,17 +386,45 @@
 }
 
 .sidebar-header {
-  height: 64px;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid var(--border-color);
-
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
   color: #64748b;
+}
+
+.sidebar-header-row {
+  height: 64px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.invite-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: white;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.invite-icon-btn:hover {
+  background-color: #f1f5f9;
+  color: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+
+.invite-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .sidebar-content {
@@ -428,8 +456,9 @@
 }
 
 .user-avatar {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
+  position: relative;
   border-radius: 50%;
   background-color: var(--primary-blue);
   color: white;
@@ -462,6 +491,53 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.active-text {
+  font-size: 0.7rem;
+  color: #10b981; /* Green-500 */
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-active .user-name {
+  color: var(--text-primary);
+}
+
+.status-offline .user-name {
+  color: var(--text-secondary);
+}
+
+.status-offline .user-avatar {
+  filter: grayscale(0.5);
+  opacity: 0.8;
+}
+
+.owner-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  background-color: #e0e7ff;
+  color: var(--primary-blue);
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: 6px;
+  vertical-align: middle;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.avatar-status-dot {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 10px;
+  height: 10px;
+  background-color: #10b981; /* Green-500 */
+  border: 2px solid white;
+  border-radius: 50%;
 }
 
 .slate-editor-flex-container {
@@ -598,4 +674,69 @@
 }
 .banner-btn.danger:hover {
   background-color: #dc2626;
+}
+
+/* Modal Styles (Ported from ShareDropdown for independence) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+}
+
+.modal-title {
+  margin-top: 0;
+}
+
+.link-copy-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.link-input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modal-cancel-btn {
+  /* Inline styles in TSX override these, but good base */
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.modal-done-btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.modal-done-btn:hover {
+  background-color: #f8fafc;
 }

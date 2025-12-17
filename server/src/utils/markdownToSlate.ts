@@ -15,7 +15,6 @@ export const markdownToSlate = (markdown: string): SlateNode[] => {
 
     if (!line) continue;
 
-    // Headings
     if (line.startsWith("# ")) {
       currentList = null;
       nodes.push({
@@ -28,17 +27,13 @@ export const markdownToSlate = (markdown: string): SlateNode[] => {
         type: "heading-two",
         children: [{ text: line.replace("## ", "") }],
       });
-    }
-    // Blockquote
-    else if (line.startsWith("> ")) {
+    } else if (line.startsWith("> ")) {
       currentList = null;
       nodes.push({
         type: "block-quote",
         children: [{ text: line.replace("> ", "") }],
       });
-    }
-    // Lists
-    else if (line.startsWith("- ") || line.startsWith("* ")) {
+    } else if (line.startsWith("- ") || line.startsWith("* ")) {
       const text = line.replace(/^[-*]\s+/, "");
 
       if (!currentList || currentList.type !== "bulleted-list") {
@@ -68,11 +63,8 @@ export const markdownToSlate = (markdown: string): SlateNode[] => {
         type: "list-item",
         children: [{ text }],
       });
-    }
-    // Default Paragraph
-    else {
+    } else {
       currentList = null;
-      // Basic inline formatting
       const children = parseInline(line);
       nodes.push({
         type: "paragraph",
@@ -93,7 +85,6 @@ const parseInline = (text: string): SlateNode[] => {
     if (part.startsWith("**") && part.endsWith("**")) {
       children.push({ text: part.slice(2, -2), bold: true });
     } else {
-      // Italic: *italic* (only if not bold)
       const subParts = part.split(/(\*.*?\*)/g);
       subParts.forEach((subPart) => {
         if (

@@ -12,9 +12,6 @@ import { gql } from "../gql";
 import type {
   GetDocumentQuery,
   GetDocumentQueryVariables,
-  UpdateDocumentMutation,
-  UpdateDocumentMutationVariables,
-  ArchiveType,
 } from "../gql/graphql";
 
 import type { ActiveUser } from "../socket/interfaces";
@@ -30,6 +27,31 @@ const GET_DOCUMENT = gql(`
       scheduledDeletionTime
       archiveType
       owner {
+        id
+        email
+        personalInformation {
+          firstName
+          lastName
+        }
+      }
+      collaborators {
+        id
+        email
+        personalInformation {
+          firstName
+          lastName
+        }
+      }
+    }
+  }
+`);
+
+const INVITE_COLLABORATOR = gql(`
+  mutation InviteCollaborator($documentID: ID!, $email: String!) {
+    inviteCollaborator(documentID: $documentID, email: $email) {
+      id
+      visibility
+      invitations {
         id
       }
     }
@@ -88,7 +110,7 @@ const DocumentEditor: React.FC = () => {
   const [activeUsers, setActiveUsers] = useState<any[]>([]);
   const isLocalUpdate = useRef(false);
 
-  // Auto-save & Status state
+  // Auto-save
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const lastSavedContent = useRef<string>("");
@@ -106,14 +128,75 @@ const DocumentEditor: React.FC = () => {
   const isArchived = data?.getDocumentByID?.isArchived;
   const scheduledDeletionTime = data?.getDocumentByID?.scheduledDeletionTime;
   const isOwner =
-    data?.getDocumentByID?.owner.id === localStorage.getItem("userId");
+    data?.getDocumentByID?.owner?.id === localStorage.getItem("userId");
 
-  // Mutations
+  // Document mutations
   const [saveDocument] = useMutation(UPDATE_DOCUMENT);
   const [archiveMock] = useMutation(ARCHIVE_DOCUMENT);
   const [unarchive] = useMutation(UNARCHIVE_DOCUMENT);
   const [cancelDeletion] = useMutation(CANCEL_SCHEDULED_DELETION);
   const [hardDelete] = useMutation(DELETE_DOCUMENT_IMMEDIATELY);
+  const [inviteCollaborator, { loading: inviteLoading }] =
+    useMutation(INVITE_COLLABORATOR);
+
+  // Invite & Share State
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showPrivateWarning, setShowPrivateWarning] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+
+  // Collaborators
+  const [collaboratorList, setCollaboratorList] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (data?.getDocumentByID) {
+      const doc = data.getDocumentByID;
+      const owner = doc.owner;
+      const collabs = doc.collaborators || [];
+
+      // Combine owner + collaborators
+      const allUsers = [
+        { ...owner, isOwner: true },
+        ...collabs.map((c) => ({ ...c, isOwner: false })),
+      ];
+
+      // Merge collaborators with active status
+      const merged = allUsers.map((u) => {
+        const active = activeUsers.find((au) => au.userId === u.id);
+        return {
+          ...u,
+          isActive: !!active,
+          color: active?.color || stringToColor(u.email), // Fallback color gen
+          socketId: active?.socketId,
+        };
+      });
+
+      // Include guest users
+      const guests = activeUsers.filter(
+        (au) => !allUsers.find((u) => u.id === au.userId)
+      );
+      const guestDocs = guests.map((g) => ({
+        id: g.userId,
+        email: g.email,
+        personalInformation: { firstName: g.firstName || "Guest" },
+        isOwner: false,
+        isActive: true,
+        color: g.color,
+        socketId: g.socketId,
+      }));
+
+      setCollaboratorList([...merged, ...guestDocs]);
+    }
+  }, [data, activeUsers]);
+
+  // Generate color from string
+  const stringToColor = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const c = (hash & 0x00ffffff).toString(16).toUpperCase();
+    return "#" + "00000".substring(0, 6 - c.length) + c;
+  };
 
   useEffect(() => {
     if (data?.getDocumentByID) {
@@ -322,6 +405,39 @@ const DocumentEditor: React.FC = () => {
     }
   };
 
+  const handleInviteClick = () => {
+    if (data?.getDocumentByID?.visibility === "PRIVATE") {
+      setShowPrivateWarning(true);
+    } else {
+      setShowInviteModal(true);
+    }
+  };
+
+  const handlePrivateWarningConfirm = () => {
+    setShowPrivateWarning(false);
+    setShowInviteModal(true);
+  };
+
+  const handleInviteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail) return;
+
+    try {
+      await inviteCollaborator({
+        variables: {
+          documentID: id!,
+          email: inviteEmail,
+        },
+      });
+      alert(`Invitation sent to ${inviteEmail}`);
+      setInviteEmail("");
+      setShowInviteModal(false);
+      refetch(); // Refresh to update collaborators list or visibility status
+    } catch (err: any) {
+      alert(err.message || "Failed to send invitation");
+    }
+  };
+
   if (!id) return <div>Error: No Document ID provided</div>;
   if (loading) return <div>Loading Doc...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -356,6 +472,89 @@ const DocumentEditor: React.FC = () => {
         onConfirm={handleArchiveConfirm}
         title={title}
       />
+
+      {/* Invite Modal */}
+      {showInviteModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-title">Invite Collaborator</h3>
+            <p>Enter the email address of the user you want to invite.</p>
+            <form onSubmit={handleInviteSubmit}>
+              <div className="link-copy-container">
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="link-input"
+                  placeholder="user@example.com"
+                  autoFocus
+                />
+              </div>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  onClick={() => setShowInviteModal(false)}
+                  className="modal-cancel-btn"
+                  style={{
+                    marginRight: "10px",
+                    background: "#f0f0f0",
+                    color: "#333",
+                    border: "none",
+                    padding: "8px 16px",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="modal-done-btn"
+                  disabled={inviteLoading}
+                >
+                  {inviteLoading ? "Sending..." : "Send Invite"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Private to Shared Warning Modal */}
+      {showPrivateWarning && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-title">Change Visibility?</h3>
+            <p style={{ marginBottom: "20px" }}>
+              This would change document from <strong>"Private"</strong> to{" "}
+              <strong>"Shared"</strong>. Do you want to proceed?
+            </p>
+            <div className="modal-actions">
+              <button
+                onClick={() => setShowPrivateWarning(false)}
+                className="modal-cancel-btn"
+                style={{
+                  marginRight: "10px",
+                  background: "#f0f0f0",
+                  color: "#333",
+                  border: "none",
+                  padding: "8px 16px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePrivateWarningConfirm}
+                className="modal-done-btn"
+              >
+                Proceed
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="editor-main">
         {isArchived && (
@@ -426,7 +625,7 @@ const DocumentEditor: React.FC = () => {
               onBlur={handleTitleBlur}
               onKeyDown={handleTitleKeyDown}
               placeholder="Untitled Document"
-              disabled={isArchived}
+              disabled={!!isArchived}
             />
           </div>
 
@@ -479,26 +678,46 @@ const DocumentEditor: React.FC = () => {
           <SlateEditor
             initialContent={content}
             onChange={handleChange}
-            readOnly={isArchived}
+            readOnly={!!isArchived}
           />
         </div>
       </div>
 
       <div className="editor-sidebar">
-        <div className="sidebar-header">Active Users</div>
+        <div className="sidebar-header-row">
+          <div className="sidebar-header">Collaborators</div>
+          <button
+            className="invite-icon-btn"
+            onClick={handleInviteClick}
+            title="Invite People"
+            disabled={!!isArchived}
+          >
+            <span className="material-icons">person_add</span>
+          </button>
+        </div>
         <div className="sidebar-content">
           <ul className="active-users-list">
-            {activeUsers.map((u) => (
-              <li key={u.socketId} className="active-user-item">
+            {collaboratorList.map((u) => (
+              <li
+                key={u.id || u.socketId}
+                className={`active-user-item ${
+                  u.isActive ? "status-active" : "status-offline"
+                }`}
+              >
                 <div
                   className="user-avatar"
                   style={{ backgroundColor: u.color }}
                 >
-                  {u.firstName?.[0] || u.email?.[0] || "?"}
+                  {u.personalInformation?.firstName?.[0] || u.email?.[0] || "?"}
+                  {u.isActive && <span className="avatar-status-dot"></span>}
                 </div>
                 <div className="user-info">
-                  <div className="user-name">{u.firstName || "User"}</div>
+                  <div className="user-name">
+                    {u.personalInformation?.firstName || "User"}
+                    {u.isOwner && <span className="owner-badge">Owner</span>}
+                  </div>
                   <div className="user-email">{u.email}</div>
+                  {u.isActive && <div className="active-text">Active</div>}
                 </div>
               </li>
             ))}

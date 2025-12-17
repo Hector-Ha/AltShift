@@ -27,6 +27,13 @@ const documentQueryResolvers: QueryResolvers = {
       await document.save();
     }
 
+    // Populate before returning
+    await document.populate([
+      { path: "owner" },
+      { path: "collaborators" },
+      { path: "invitations" },
+    ]);
+
     return document;
   },
 
@@ -77,7 +84,9 @@ const documentQueryResolvers: QueryResolvers = {
       }
     }
 
-    let q = DocumentModel.find(criteria);
+    let q = DocumentModel.find(criteria)
+      .populate("owner")
+      .populate("collaborators");
 
     // Sorting
     if (sort) {
@@ -88,12 +97,14 @@ const documentQueryResolvers: QueryResolvers = {
     }
 
     // Pagination
+
     if (pagination) {
       if (pagination.offset) q = q.skip(pagination.offset);
       if (pagination.limit) q = q.limit(pagination.limit);
     }
 
-    return await q.exec();
+    const docs = await q.exec();
+    return docs;
   },
 
   getDocumentsInTrash: async (_, __, context) => {
@@ -101,7 +112,9 @@ const documentQueryResolvers: QueryResolvers = {
     return await DocumentModel.find({
       owner: context.user._id,
       deletedAt: { $ne: null },
-    });
+    })
+      .populate("owner")
+      .populate("collaborators");
   },
 };
 

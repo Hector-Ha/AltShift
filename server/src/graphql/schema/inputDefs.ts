@@ -42,7 +42,9 @@ const inputDefs = gql`
   # User
   input PersonalInformationInput {
     firstName: String!
-    lastName: String
+    lastName: String!
+    jobTitle: String
+    organization: String!
     DOB: DateTime
   }
 

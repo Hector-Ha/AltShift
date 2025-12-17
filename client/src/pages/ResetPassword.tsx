@@ -38,7 +38,7 @@ const ResetPassword: React.FC = () => {
     e.preventDefault();
     if (!token) return;
     if (newPassword !== confirmPassword) {
-      alert("Passwords do not match"); // Simple alert for now, improved UI later if needed
+      alert("Passwords do not match");
       return;
     }
 

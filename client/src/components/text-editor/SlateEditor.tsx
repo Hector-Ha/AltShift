@@ -209,7 +209,7 @@ const SlateEditor: React.FC<SlateEditorProps> = ({
     },
   ]);
 
-  // Ref to track current value for comparison to prevent focus loss
+  // Track value to prevent focus loss
   const valueRef = React.useRef<Descendant[]>([]);
 
   usePagination(editor);
@@ -223,7 +223,7 @@ const SlateEditor: React.FC<SlateEditorProps> = ({
       try {
         const parsed = JSON.parse(initialContent);
 
-        // Check if content matches current state to avoid re-render loop/focus loss
+        // Avoid re-render loop
         const currentContentString = JSON.stringify(valueRef.current);
         if (currentContentString === initialContent) {
           return;
@@ -232,7 +232,8 @@ const SlateEditor: React.FC<SlateEditorProps> = ({
         if (Array.isArray(parsed)) {
           setValue(parsed);
           editor.children = parsed;
-          // Do NOT reset selection here to preserve focus on updates
+          setValue(parsed);
+          editor.children = parsed;
         }
       } catch (e) {
         console.error("Invalid slate content", e);

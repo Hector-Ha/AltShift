@@ -77,9 +77,7 @@ export const ioOnConnect = (
         })();
       }
 
-      // Join Document Room
       socket.on(SOCKET_EVENTS.JOIN_DOCUMENT, async (documentId: string) => {
-        // Force user to be authenticated
         const user = socket.data.user;
         if (!user) {
           socket.emit("error", { message: "Unauthorized" });
@@ -87,7 +85,6 @@ export const ioOnConnect = (
         }
 
         socket.join(documentId);
-        // Track which doc we are in
         socket.data.documentID = documentId;
         socket.data.hasUnsavedChanges = false;
 
@@ -95,7 +92,6 @@ export const ioOnConnect = (
           `Socket ${socket.id} (User: ${user.email}) joined document: ${documentId}`
         );
 
-        // Notify global listeners (Collaborators on Dashboard)
         try {
           const { DocumentModel } = await import("../models/MDocument.js");
           const doc = await DocumentModel.findById(documentId);
@@ -177,7 +173,6 @@ export const ioOnConnect = (
         }
       );
 
-      // Handle Disconnect
       onDisconnect(socket, io);
     }
   );

@@ -38,6 +38,12 @@ const userMutationResolvers: MutationResolvers = {
       lastName:
         personalInformation?.lastName ||
         context.user.personalInformation.lastName,
+      jobTitle:
+        personalInformation?.jobTitle ||
+        context.user.personalInformation.jobTitle,
+      organization:
+        personalInformation?.organization ||
+        context.user.personalInformation.organization,
       DOB: personalInformation?.DOB || context.user.personalInformation.DOB,
       profilePicture:
         profilePicture || context.user.personalInformation.profilePicture,

@@ -24,7 +24,12 @@ const Signup: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [organization, setOrganization] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const [register, { loading, error }] = useMutation<
     CreateUserMutation,
@@ -41,14 +46,51 @@ const Signup: React.FC = () => {
     },
   });
 
+  const validatePassword = (pwd: string) => {
+    const hasUpperCase = /[A-Z]/.test(pwd);
+    const hasLowerCase = /[a-z]/.test(pwd);
+    const hasNumber = /[0-9]/.test(pwd);
+    const hasSpecialChar = /[!@#$%^&*]/.test(pwd);
+    const isValidLength = pwd.length >= 8;
+
+    if (!isValidLength) return "Password must be at least 8 characters long.";
+    if (!hasUpperCase)
+      return "Password must contain at least one uppercase letter (A-Z).";
+    if (!hasLowerCase)
+      return "Password must contain at least one lowercase letter (a-z).";
+    if (!hasNumber) return "Password must contain at least one number (0-9).";
+    if (!hasSpecialChar)
+      return "Password must contain at least one special character (!@#$%^&*).";
+
+    return null;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError(null);
+
+    if (password !== confirmPassword) {
+      setValidationError("Passwords do not match.");
+      return;
+    }
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setValidationError(passwordError);
+      return;
+    }
+
     register({
       variables: {
         input: {
           email,
           password,
-          personalInformation: { firstName },
+          personalInformation: {
+            firstName,
+            lastName,
+            jobTitle,
+            organization,
+          },
         },
       },
     });
@@ -77,13 +119,46 @@ const Signup: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-row">
+              <div className="form-group half-width">
+                <input
+                  className="form-input"
+                  type="text"
+                  placeholder="First Name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group half-width">
+                <input
+                  className="form-input"
+                  type="text"
+                  placeholder="Last Name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
             <div className="form-group">
               <input
                 className="form-input"
                 type="text"
-                placeholder="First Name"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Job Title (Optional)"
+                value={jobTitle}
+                onChange={(e) => setJobTitle(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group">
+              <input
+                className="form-input"
+                type="text"
+                placeholder="Organization / Company"
+                value={organization}
+                onChange={(e) => setOrganization(e.target.value)}
                 required
               />
             </div>
@@ -110,10 +185,27 @@ const Signup: React.FC = () => {
               />
             </div>
 
+            <div className="form-group">
+              <input
+                className="form-input"
+                type="password"
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+            </div>
+
             <button type="submit" className="submit-btn" disabled={loading}>
               {loading ? "Creating Account..." : "Sign Up"}
             </button>
           </form>
+
+          {validationError && (
+            <div className="error-message">
+              <p>{validationError}</p>
+            </div>
+          )}
 
           {error && (
             <div className="error-message">
