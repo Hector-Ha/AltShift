@@ -466,13 +466,19 @@ const documentMutationResolvers: MutationResolvers = {
 
     const userID = userToInvite._id.toString();
 
-    // Check if already invited or collaborator
-    if (document.collaborators.some((c) => c.toString() === userID))
+    // Check if already collaborator
+    if (document.collaborators.some((c) => c.toString() === userID)) {
+      // Already a collaborator, maybe return simple success or specific code
       return document;
-    if (document.invitations.some((i) => i.toString() === userID))
-      return document;
+    }
 
-    document.invitations.push(userToInvite._id);
+    // Check if already invited - if so, we can just resend the notification/email
+    const alreadyInvited = document.invitations.some(
+      (i) => i.toString() === userID
+    );
+    if (!alreadyInvited) {
+      document.invitations.push(userToInvite._id);
+    }
 
     // If Private, switch to Shared
     if (document.visibility === "PRIVATE") {
@@ -530,13 +536,32 @@ const documentMutationResolvers: MutationResolvers = {
     return document;
   },
 
-  acceptCollaborateInvitation: async (_, { documentID }, context) => {
+  acceptCollaborateInvitation: async (
+    _,
+    { documentID, notificationID },
+    context
+  ) => {
     if (!context.user) throw new Error("Not Authenticated");
     const document = await DocumentModel.findById(documentID);
     if (!document) throw new Error("Document not found");
 
     const userId = context.user._id;
-    // Use some + toString comparison for reliability, though includes might work if references match
+
+    // Check if user is already a collaborator
+    if (
+      document.collaborators.some((id) => id.toString() === userId.toString())
+    ) {
+      // Just cleanup notification if provided
+      if (notificationID) {
+        try {
+          await NotificationModel.findByIdAndUpdate(notificationID, {
+            read: true,
+          });
+        } catch (e) {}
+      }
+      return document;
+    }
+
     if (!document.invitations.some((id) => id.toString() === userId.toString()))
       throw new Error("No invitation found");
 
@@ -550,10 +575,43 @@ const documentMutationResolvers: MutationResolvers = {
     document.markModified("invitations");
 
     await document.save();
+
+    // 1. Mark the original invitation notification as read (if ID provided or found)
+    if (notificationID) {
+      await NotificationModel.findByIdAndUpdate(notificationID, { read: true });
+    } else {
+      // Try to find the invite notification
+      await NotificationModel.updateMany(
+        {
+          recipient: userId,
+          document: document._id,
+          type: NotificationType.DOCUMENT_INVITE,
+          read: false,
+        },
+        { read: true }
+      );
+    }
+
+    // 2. Notify the Owner that invitation was accepted
+    if (document.owner.toString() !== userId.toString()) {
+      await NotificationModel.create({
+        recipient: document.owner,
+        sender: userId,
+        type: NotificationType.DOCUMENT_UPDATE, // Or a new type DOCUMENT_INVITE_ACCEPTED if available, reusing UPDATE for now
+        document: document._id,
+        message: `${context.user.email} accepted your invitation to edit "${document.title}"`,
+        read: false,
+      });
+    }
+
     return document;
   },
 
-  declineCollaborateInvitation: async (_, { documentID }, context) => {
+  declineCollaborateInvitation: async (
+    _,
+    { documentID, notificationID },
+    context
+  ) => {
     if (!context.user) throw new Error("Not Authenticated");
     const document = await DocumentModel.findById(documentID);
     if (!document) throw new Error("Document not found");
@@ -563,6 +621,34 @@ const documentMutationResolvers: MutationResolvers = {
       (id) => id.toString() !== userId.toString()
     );
     await document.save();
+
+    // 1. Mark the notification as read
+    if (notificationID) {
+      await NotificationModel.findByIdAndUpdate(notificationID, { read: true });
+    } else {
+      await NotificationModel.updateMany(
+        {
+          recipient: userId,
+          document: document._id,
+          type: NotificationType.DOCUMENT_INVITE,
+          read: false,
+        },
+        { read: true }
+      );
+    }
+
+    // 2. Notify the Owner that invitation was declined (Optional but requested)
+    if (document.owner.toString() !== userId.toString()) {
+      await NotificationModel.create({
+        recipient: document.owner,
+        sender: userId,
+        type: NotificationType.DOCUMENT_UPDATE,
+        document: document._id,
+        message: `${context.user.email} declined your invitation to edit "${document.title}"`,
+        read: false,
+      });
+    }
+
     return true;
   },
 
