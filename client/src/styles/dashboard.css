@@ -390,3 +390,13 @@
   background-color: #e2e8f0;
   margin: 4px 0;
 }
+
+.nav-back-link {
+  text-decoration: none;
+  color: #64748b;
+  margin-right: 1rem;
+}
+
+.profile-trigger-icon {
+  font-size: 16px;
+}

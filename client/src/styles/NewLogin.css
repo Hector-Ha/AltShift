@@ -180,3 +180,18 @@
     display: flex;
   }
 }
+
+/* ResetPassword & Login Refactor */
+.login-form-full-width {
+  width: 100%;
+}
+
+.forgot-password-container {
+  text-align: right;
+}
+
+.forgot-password-link {
+  font-size: 0.875rem;
+  color: #4f46e5;
+  text-decoration: none;
+}

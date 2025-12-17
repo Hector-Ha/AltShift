@@ -11,6 +11,8 @@ import { withImages } from "./plugins/withImages";
 import { withLinks } from "./plugins/withLinks";
 import { withTables } from "./plugins/withTables";
 
+import "../../styles/SlateEditor.css"; // Import the new styles
+
 interface SlateEditorProps {
   initialContent?: string; // JSON string or plain text
   onChange?: (content: string) => void;
@@ -93,7 +95,7 @@ const Element = ({ attributes, children, element }: RenderElementProps) => {
             <img
               src={(element as any).url}
               alt="img"
-              style={{ display: "block", maxWidth: "100%", maxHeight: "20em" }}
+              className="slate-image-wrapper"
             />
           </div>
           {children}
@@ -106,7 +108,7 @@ const Element = ({ attributes, children, element }: RenderElementProps) => {
             <video
               src={(element as any).url}
               controls
-              style={{ display: "block", maxWidth: "100%", maxHeight: "20em" }}
+              className="slate-video-wrapper"
             />
           </div>
           {children}

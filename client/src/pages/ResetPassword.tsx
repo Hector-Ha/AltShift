@@ -55,7 +55,7 @@ const ResetPassword: React.FC = () => {
   if (!token) {
     return (
       <div className="login-page">
-        <div className="login-form-section" style={{ width: "100%" }}>
+        <div className="login-form-section login-form-full-width">
           <div className="login-form-container">
             <p>Invalid or missing token.</p>
             <Link to="/">Go to Login</Link>
