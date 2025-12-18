@@ -1,293 +1,445 @@
 # AltShift - Collaborative Document Editor
 
-AltShift is a real-time collaborative document editor built with TypeScript, Slate.js, Socket.IO, and GraphQL. It features multi-user document editing with WebSocket-based synchronization, MongoDB persistence, and AI-powered document generation.
+AltShift is a real-time collaborative document editor built with modern web technologies. It bridges the gap between traditional word processing and AI-assisted creation, offering a seamless environment for writing and collaboration.
 
 ---
 
-## Getting Started
+## ⚡ TL;DR
+
+**What**: Real-time collaborative document editor with AI-powered content generation  
+**Stack**: React + TypeScript + Node.js + MongoDB + GraphQL + Socket.IO  
+**Features**: Multi-user editing, AI document generation, rich text formatting, notifications  
+**Setup**: Clone → Install deps → Add env vars → `npm run dev`
+
+### Why AltShift?
+
+- ⚡**Real-time Collaboration** - Multiple users can edit documents simultaneously with WebSocket-based sync
+- ⚡**AI-Powered Generation** - Create documents from prompts and attachments using Llama 3.1
+- ⚡**Rich Text Editing** - Full-featured editor with formatting, tables, images, and more
+- ⚡**Secure & Private** - Granular visibility controls (Public, Shared, Private)
+- ⚡**Responsive Design** - Works seamlessly across desktop and mobile devices
+- ⚡**Real-time Notifications** - Stay updated on document changes and collaboration invites
+
+---
+
+## Features
+
+### Document Management
+
+- ✅ Create, edit, delete, and duplicate documents
+- ✅ Archive with optional scheduled deletion (30 days)
+- ✅ Document versioning and snapshot history
+- ✅ Search and filter by ownership, collaboration status, and archive state
+- ✅ Favorite documents for quick access
+
+### Collaboration
+
+- ✅ Real-time multi-user editing with Socket.IO
+- ✅ User presence indicators with active status
+- ✅ Invite collaborators via email with notification system
+- ✅ Granular access control (Owner, Collaborator, Viewer)
+- ✅ Transfer document ownership
+
+### AI Integration
+
+- ✅ Generate documents from natural language prompts
+- ✅ Support for PDF and Word document attachments as context
+- ✅ In-editor AI assistant for content generation
+- ✅ Markdown to Slate.js conversion for rich formatting
+
+### Rich Text Editing (Slate.js)
+
+- ✅ Multiple heading levels, lists, blockquotes
+- ✅ Text formatting (bold, italic, underline, strikethrough)
+- ✅ Text and background colors
+- ✅ Tables with multiple rows and columns
+- ✅ Image and video embeds
+- ✅ Hyperlinks
+- ✅ Text alignment options
+
+### User Management
+
+- ✅ Secure authentication with JWT
+- ✅ Password reset via email (SendGrid)
+- ✅ User profiles with customizable information
+- ✅ Email verification system
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js (>= 18)
-- MongoDB instance (local or cloud)
-- npm or yarn
-- Groq API Key (for AI features)
-- SendGrid API Key (for emails)
+- **Node.js** ≥ 18.0.0
+- **MongoDB** instance (local or cloud)
+- **SendGrid API Key** (for emails)
+- **Groq API Key** (for AI features)
 
 ### Installation
 
 1. **Clone the repository**
 
-```bash
-git clone <repository-url>
-cd altshift
-```
+   ```bash
+   git clone https://github.com/yourusername/altshift.git
+   cd altshift
+   ```
 
-2. **Install client dependencies**
+2. **Install dependencies**
 
-```bash
-cd client
-npm install
-```
+   ```bash
+   # Install root dependencies
+   npm install
 
-3. **Install server dependencies**
+   # Install client dependencies
+   cd client
+   npm install
 
-```bash
-cd ../server
-npm install
-```
+   # Install server dependencies
+   cd ../server
+   npm install
+   ```
 
-4. **Configure environment variables**
+3. **Configure environment variables**
 
-Create `server/.env`:
+   Create `server/.env`:
 
-```env
-APP_PORT=4000
-MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/?appName=AltShift
-JWT_SECRET=your_jwt_secret_key_here
-SENDGRID_API_KEY=SG.your_sendgrid_key_here
-GROQ_API_KEY=gsk_your_groq_key_here
-CLIENT_URL=http://localhost:5173
-```
+   ```env
+   APP_PORT=4000
+   MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/?appName=AltShift
+   JWT_SECRET=your_jwt_secret_key_here
+   SENDGRID_API_KEY=SG.your_sendgrid_key_here
+   SENDGRID_SENDER_EMAIL=noreply@yourdomain.com
+   GROQ_API_KEY=gsk_your_groq_key_here
+   CLIENT_URL=http://localhost:5173
+   ```
 
-### Development
+   Create `client/.env` (optional):
 
-**Run the client:**
+   ```env
+   VITE_SERVER_URL=http://localhost:4000
+   ```
 
-```bash
-cd client
-npm run dev
-```
+4. **Start the development servers**
 
-Client runs at `http://localhost:5173`
+   ```bash
+   # From the root directory
+   npm run dev
 
-**Run the server:**
+   # Or start separately:
+   # Client (Terminal 1)
+   cd client && npm run dev
 
-```bash
-cd server
-npm run watch  # Compile TypeScript in watch mode
-npm run dev    # Run with nodemon (in another terminal)
-```
+   # Server (Terminal 2)
+   cd server && npm run dev
+   ```
 
-Server runs at `http://localhost:4000`
-GraphQL playground at `http://localhost:4000/graphql`
-
-### Build for Production
-
-**Build client:**
-
-```bash
-cd client
-npm run build
-```
-
-**Build server:**
-
-```bash
-cd server
-npm run build
-npm start
-```
+5. **Access the application**
+   - Frontend: http://localhost:5173
+   - GraphQL Playground: http://localhost:4000/graphql
 
 ---
 
-# Project Details
+## 🏗️ Tech Stack
 
-## Project Goal
+### Frontend
 
-The primary goal of AltShift is to deliver a seamless, high-performance real-time collaborative editing experience comparable to industry leaders like Google Docs and Notion. It aims to bridge the gap between traditional word processing and modern AI assistance, providing users with a powerful workspace where creating, editing, and sharing documents feels instantaneous and intuitive.
+| Technology       | Purpose                 | Version  |
+| ---------------- | ----------------------- | -------- |
+| React 19         | UI Framework            | ^19.1.1  |
+| TypeScript       | Type Safety             | ~5.8.3   |
+| Vite             | Build Tool              | ^7.1.7   |
+| Slate.js         | Rich Text Editor        | ^0.118.1 |
+| Apollo Client    | GraphQL Client          | ^4.0.9   |
+| Socket.IO Client | Real-time Communication | ^4.8.1   |
+| React Router     | Routing                 | ^7.10.1  |
+| Lucide React     | Icons                   | ^0.562.0 |
 
-## Technical Challenges
+### Backend
 
-Building a real-time collaborative editor introduces several complex engineering challenges:
+| Technology          | Purpose          | Version |
+| ------------------- | ---------------- | ------- |
+| Node.js + Express 5 | Web Server       | ^5.1.0  |
+| TypeScript          | Type Safety      | ^5.9.3  |
+| Apollo Server       | GraphQL Server   | ^5.0.0  |
+| Socket.IO           | WebSocket Server | ^4.8.1  |
+| MongoDB + Mongoose  | Database         | ^8.19.2 |
+| JWT                 | Authentication   | ^9.0.2  |
+| Bcrypt.js           | Password Hashing | ^3.0.3  |
+| SendGrid            | Email Service    | ^8.1.6  |
 
-- **Concurrency & Conflict Resolution**: Implementing robust strategies (like Operational Transformation or CRDTs) to ensure that multiple users editing the same document simultaneously do not overwrite each other's changes.
-- **State Synchronization**: Managing WebSocket connections across multiple rooms and ensuring consistent document state propagation between clients and the database in real-time.
-- **Rich Text Serialization**: Efficiently converting complex Slate.js JSON structures to identifying markdown or HTML for storage and AI processing, and accurately reconstructing them on retrieval.
-- **AI Latency & Context**: Integrating Large Language Models (LLMs) in a way that feels responsive. Streaming responses and managing context window limits when dealing with large documents or multiple attachments.
-- **Scalability**: Designing the architecture to handle increasing numbers of concurrent active documents and WebSocket connections without degrading performance.
+---
 
 ## Project Structure
 
 ```
 altshift/
-├── client/          # Frontend React application
-├── server/          # Backend Node.js server
-└── README.md
+├── client/                 # Frontend React application
+│   ├── src/
+│   │   ├── components/    # Reusable UI components
+│   │   ├── pages/         # Route pages
+│   │   ├── styles/        # CSS stylesheets
+│   │   ├── apollo/        # GraphQL client setup
+│   │   ├── socket/        # Socket.IO client
+│   │   ├── gql/           # Generated GraphQL types
+│   │   └── utils/         # Helper functions
+│   ├── public/            # Static assets
+│   └── package.json
+│
+├── server/                # Backend Node.js application
+│   ├── src/
+│   │   ├── graphql/       # GraphQL schema & resolvers
+│   │   ├── models/        # Mongoose models
+│   │   ├── socket/        # Socket.IO handlers
+│   │   ├── interfaces/    # TypeScript interfaces
+│   │   ├── utils/         # Helper functions
+│   │   └── index.ts       # Server entry point
+│   ├── dist/              # Compiled JavaScript
+│   └── package.json
+│
+└── package.json           # Root workspace config
 ```
 
-## Architecture Overview
+---
 
-### Client-Side (Frontend)
+## 📚 Documentation
 
-- **Framework**: React 19 with TypeScript
-- **Editor**: Slate.js for rich text editing
-- **Real-time**: Socket.IO client for WebSocket communication
-- **Build Tool**: Vite with React compiler plugin
-- **Styling**: Custom SaaS-themed CSS
+### Database Schema
 
-### Server-Side (Backend)
-
-- **Runtime**: Node.js with Express 5
-- **GraphQL**: Apollo Server for API
-- **Real-time**: Socket.IO server with WebSocket engine
-- **Database**: MongoDB with Mongoose ODM
-- **Language**: TypeScript
-- **AI Integration**: Groq SDK (Llama 3.1) for content generation
-- **Email Service**: SendGrid for verification and notifications
-
-## Tech Stack
-
-### Client Dependencies
-
-| Library          | Purpose                    | Version  |
-| ---------------- | -------------------------- | -------- |
-| React            | UI framework               | ^19.1.1  |
-| React DOM        | React rendering            | ^19.1.1  |
-| Slate            | Rich text editor framework | ^0.118.1 |
-| Slate React      | React bindings for Slate   | ^0.118.2 |
-| Socket.IO Client | WebSocket client           | ^4.8.1   |
-| Immutable        | Immutable data structures  | ^5.1.3   |
-| Date-fns         | Date formatting            | ^4.1.0   |
-
-### Server Dependencies
-
-| Library       | Purpose              | Version  |
-| ------------- | -------------------- | -------- |
-| Express       | Web framework        | ^5.1.0   |
-| Apollo Server | GraphQL server       | ^5.0.0   |
-| Socket.IO     | WebSocket server     | ^4.8.1   |
-| MongoDB       | Database driver      | ^6.20.0  |
-| Mongoose      | MongoDB ODM          | ^8.19.2  |
-| GraphQL       | Query language       | ^16.11.0 |
-| CORS          | Cross-origin support | ^2.8.5   |
-| SendGrid/Mail | Email delivery       | ^8.1.6   |
-| JSONWebToken  | Authentication       | ^9.0.2   |
-| BcryptJS      | Password hashing     | ^3.0.3   |
-| PDF-Parse     | PDF text extraction  | ^2.4.5   |
-| Mammoth       | Word doc extraction  | ^1.11.0  |
-
-## Current Features
-
-### Implemented
-
-- ✅ **Authentication**: User Signup, Login, Forgot Password, Email Verification (SendGrid)
-- ✅ **Document Management**: Create, Edit, Delete, Archive, Restore
-- ✅ **Rich Text Editor**: Slate.js integration with formatting support
-- ✅ **Real-time Collaboration**: Socket.IO-based sync for multi-user editing
-- ✅ **AI Assistant**: Generate document content from prompts and attachments (PDF/Word) using Groq (Llama 3.1)
-- ✅ **Sharing**: Public/Private visibility toggles, collaborator invitations
-- ✅ **Organization**: Dashboard with document lists, recently used, favorites
-- ✅ **GraphQL API**: Comprehensive mutation/query set for all operations
-
-### Planned
-
-- 📋 User presence indicators (cursors/avatars)
-- 📋 Offline editing with sync queue
-- 📋 Document version history (UI implementation)
-- 📋 Advanced rich text (tables, images)
-- 📋 AWS deployment
-
-## Database Schema
-
-### User Schema
+#### User Schema
 
 ```typescript
 {
-  uuid: UUID,
-  email: string (unique),
-  password: string, // Hashed
+  email: string (unique)
+  password: string (hashed)
   personalInformation: {
-    firstName: string,
-    lastName?: string,
-    DOB?: Date,
+    firstName: string
+    lastName: string
+    jobTitle?: string
+    organization: string
+    DOB?: Date
     profilePicture?: string
-  },
-  isCollaborating: [ObjectId],
-  isFavorite: [ObjectId],
-  resetPasswordToken?: string,
-  resetPasswordExpires?: Date,
-  createdAt: Date,
+  }
+  ownership: ObjectId[]
+  isCollaborating: ObjectId[]
+  isFavorite: ObjectId[]
+  resetPasswordToken?: string
+  resetPasswordExpires?: Date
+  createdAt: Date
   updatedAt: Date
+  deletedAt?: Date
 }
 ```
 
-### Document Schema
+#### Document Schema
 
 ```typescript
 {
-  uuid: UUID,
-  title: string,
-  content: string (Slate JSON),
-  isPublic: boolean,
-  visibility: "PUBLIC" | "SHARED" | "PRIVATE",
-  owner: ObjectId,
-  collaborators: [ObjectId],
-  invitations: [ObjectId],
-  versions: [{ content: string, createdAt: Date }],
-  isArchived: boolean,
-  archiveType?: "MANUAL" | "SCHEDULED",
-  scheduledDeletionTime?: Date,
-  createdAt: Date,
+  title: string
+  content: string (Slate JSON)
+  visibility: "PUBLIC" | "SHARED" | "PRIVATE"
+  owner: ObjectId
+  collaborators: ObjectId[]
+  invitations: ObjectId[]
+  versions: [{
+    content: string
+    createdAt: Date
+  }]
+  isArchived: boolean
+  archiveType?: "MANUAL" | "SCHEDULED"
+  scheduledDeletionTime?: Date
+  createdAt: Date
   updatedAt: Date
+  deletedAt?: Date
 }
 ```
 
-## GraphQL API
+#### Notification Schema
 
-### Queries
+```typescript
+{
+  recipient: ObjectId;
+  sender: ObjectId;
+  type: "DOCUMENT_INVITE" |
+    "DOCUMENT_UPDATE" |
+    "DOCUMENT_DELETE" |
+    "OWNERSHIP_TRANSFER";
+  document: ObjectId;
+  message: string;
+  read: boolean;
+  createdAt: Date;
+}
+```
+
+### GraphQL API
+
+#### Key Queries
 
 ```graphql
-query {
-  getUser(uuid: ID!): User
-  getAllUsers: [User!]!
-  # Document queries...
-}
+# Get a specific document
+getDocumentByID(id: ID!): Document
+
+# Get all accessible documents with filters
+getDocuments(
+  filter: DocumentFilterInput
+  sort: DocumentSortInput
+  pagination: PaginationInput
+): [Document!]!
+
+# Get user information
+getUserByID(id: ID!): User
+
+# Get notifications
+myNotifications(filter: NotificationFilter): [Notification!]!
 ```
 
-### Mutations
+#### Key Mutations
 
 ```graphql
-mutation {
-  createDocumentWithAI(prompt: String!, attachments: [AttachmentInput]): Document!
-  login(email: String!, password: String!): AuthPayload!
-  # See mutationDefs.ts for full list
-}
+# Authentication
+createUser(input: createUserInput!): AuthPayload!
+login(email: String!, password: String!): AuthPayload!
+
+# Document operations
+createDocument(input: createDocumentInput!): Document!
+createDocumentWithAI(prompt: String!, attachments: [AttachmentInput]): Document!
+updateDocument(documentID: ID!, input: updateDocumentInput!): Document!
+
+# Collaboration
+inviteCollaborator(documentID: ID!, email: String!): Document!
+acceptCollaborateInvitation(documentID: ID!, notificationID: ID): Document!
+removeCollaborator(documentID: ID!, userID: ID!): Document!
+
+# AI
+generateAIContent(prompt: String!, context: String!): String!
 ```
 
-## Future Enhancements
+### Socket.IO Events
 
-**Advanced Collaboration**:
+#### Client → Server
 
-- [ ] User presence cursors and selection highlighting.
-- [ ] Commenting threads and mentions (@user).
-- [ ] "Track Changes" mode (suggestion mode).
+- `join-document` - Join a document room for real-time updates
+- `text-update` - Send document content changes
+- `cursor-move` - Broadcast cursor position
 
-**Offline Capabilities**:
+#### Server → Client
 
-- [ ] Local-first architecture using IndexedDB.
-- [ ] Background synchronization queue for offline edits.
+- `active-users` - List of users currently viewing the document
+- `join-document` - New user joined the document
+- `text-update` - Document content changed
+- `doc-activity` - User viewing/left document
+- `new-notification` - Real-time notification delivery
 
-**Enhanced Editor Features**:
+---
 
-- [ ] Image and video uploads/embedding.
-- [ ] Nested tables and complex layout blocks.
-- [ ] Markdown shortcuts support.
+## Configuration
 
-**Analytics & History**:
+### Client Environment Variables
 
-- [ ] Detailed document version history with diff visualization.
-- [ ] User activity logs and contribution stats.
+```env
+VITE_SERVER_URL=http://localhost:4000  # Backend URL
+```
 
-**Infrastructure**:
+### Server Environment Variables
 
-- [ ] Migration to a microservices architecture.
-- [ ] Deployment to AWS (ECS/Fargate) with Redis for socket scaling.
+```env
+APP_PORT=4000                          # Server port
+MONGODB_URI=mongodb://...              # MongoDB connection string
+JWT_SECRET=your_secret_here            # JWT signing secret
+SENDGRID_API_KEY=SG.xxx                # SendGrid API key
+SENDGRID_SENDER_EMAIL=noreply@...      # Email sender address
+GROQ_API_KEY=gsk_xxx                   # Groq AI API key
+CLIENT_URL=http://localhost:5173       # Frontend URL
+```
+
+---
+
+## Development
+
+### Run Development Servers
+
+```bash
+# Run both client and server concurrently
+npm run dev
+
+# Or run separately
+cd client && npm run dev
+cd server && npm run dev
+```
+
+### Build for Production
+
+```bash
+# Build client
+cd client && npm run build
+
+# Build server
+cd server && npm run build
+```
+
+### Code Generation
+
+```bash
+# Generate GraphQL types (client)
+cd client && npm run codegen
+
+# Generate GraphQL types (server)
+cd server && npm run codegen
+```
+
+---
+
+## Known Issues & Limitations
+
+- **Pagination**: Page breaks in the Slate editor are calculated dynamically and may need refinement for complex layouts
+- **Offline Mode**: Not yet implemented; changes require an active connection
+- **Browser Storage**: localStorage/sessionStorage are not used due to artifact constraints
+- **File Uploads**: Currently limited to PDF and Word documents for AI context
+
+---
+
+## Roadmap
+
+### Coming Soon
+
+- [ ] User presence cursors with real-time positions
+- [ ] Commenting threads and @mentions
+- [ ] "Track Changes" mode for suggestions
+- [ ] Offline editing with sync queue
+- [ ] Document templates library
+- [ ] Export to PDF/DOCX
+- [ ] Advanced search with filters
+
+### Future Enhancements
+
+- [ ] Markdown shortcuts support
+- [ ] Nested tables and complex layouts
+- [ ] Image uploads and management
+- [ ] Document version diff visualization
+- [ ] Activity logs and contribution stats
+- [ ] AWS deployment scripts
+- [ ] Redis for scaling Socket.IO
+- [ ] Microservices architecture
+
+---
 
 ## License
 
-MIT.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Note
+---
 
-The project is provided as is.
+## Acknowledgments
+
+- Built with [Slate.js](https://docs.slatejs.org/) for rich text editing
+- AI powered by [Groq](https://groq.com/) and Llama 3.1
+- Email delivery by [SendGrid](https://sendgrid.com/)
+- Inspired by collaborative tools like Google Docs and Notion
+
+---
+
+<br/>
+
+**⭐ Star this repo if you find it helpful!**
+
+Design and Develop by. The project is provided as is
+_\- Hector Ha_

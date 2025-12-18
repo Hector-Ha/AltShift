@@ -1,6 +1,0 @@
-src/gql/fragment-masking.ts(2,69): error TS2307: Cannot find module '@graphql-typed-document-node/core' or its corresponding type declarations.
-src/gql/fragment-masking.ts(3,10): error TS1484: 'FragmentDefinitionNode' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
-src/gql/fragment-masking.ts(4,10): error TS1484: 'Incremental' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
-src/gql/gql.ts(3,51): error TS2307: Cannot find module '@graphql-typed-document-node/core' or its corresponding type declarations.
-src/gql/graphql.ts(2,51): error TS2307: Cannot find module '@graphql-typed-document-node/core' or its corresponding type declarations.
-src/gql/graphql.ts(56,13): error TS1294: This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
