@@ -1,40 +1,65 @@
 :root {
-  /* Primary Brand Colors (Indigo) */
-  --primary-blue: #4f46e5;
-  --primary-blue-hover: #4338ca;
-  --secondary-blue: #6366f1; /* Lighter indigo */
+  /* Brand Colors */
+  --primary-color: #155eef;
+  --primary-color-hover: #114ac6; /* Darker shade for hover */
+  --primary-color-light: #eff4ff; /* Very light tint for backgrounds */
 
-  /* Neutral Colors (Slate) */
+  /* Neutral Colors */
   --text-primary: #1e293b;
   --text-secondary: #64748b;
-  --bg-light: #f8fafc;
-  --bg-canvas: #e2e8f0; /* Darker background for editor canvas */
-  --bg-white: #ffffff;
+  --text-tertiary: #94a3b8;
+  --bg-body: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-secondary: #f1f5f9;
   --border-color: #e2e8f0;
 
-  /* Accent Support- Adjusted to match saturation */
-  --success-green: #10b981;
-  --warning-yellow: #f59e0b;
-  --danger-red: #ef4444;
+  /* Semantic Colors */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
 
-  /* Font settings */
-  --font-family-base: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* Typography */
+  --font-family-primary: "Open Sauce Sans", Roboto, sans-serif;
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-base: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
 
-  /* Spacing */
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
+  /* Spacing Scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
 }
 
 body {
-  font-family: var(--font-family-base);
+  font-family: var(--font-family-primary);
   color: var(--text-primary);
-  background-color: var(--bg-light);
+  background-color: var(--bg-body);
   margin: 0;
   padding: 0;
+  -webkit-font-smoothing: antialiased;
 }

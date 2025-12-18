@@ -29,60 +29,72 @@ const ArchiveModal: React.FC<ArchiveModalProps> = ({
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-        <h3>Archive Document</h3>
-        <p>
-          Are you sure you want to archive <strong>"{title}"</strong>?
-        </p>
+        <div className="modal-header">
+          <div className="modal-title">Archive Document</div>
+          <p className="modal-description">
+            Are you sure you want to archive <strong>"{title}"</strong>? This
+            action can be reversed based on your selection below.
+          </p>
+        </div>
 
-        <div className="modal-option">
-          <label className="checkbox-label">
+        <div className="modal-body">
+          <div className="modal-radio-group">
+            <label
+              className={`radio-option ${
+                archiveOption === "SOFT" ? "selected" : ""
+              }`}
+            >
+              <input
+                type="radio"
+                value="SOFT"
+                checked={archiveOption === "SOFT"}
+                onChange={() => setArchiveOption("SOFT")}
+              />
+              <div className="radio-content">
+                <span className="radio-title">Archive Only</span>
+                <span className="radio-desc">
+                  Soft delete (item remains recoverable anytime)
+                </span>
+              </div>
+            </label>
+
+            <label
+              className={`radio-option ${
+                archiveOption === "SCHEDULED" ? "selected" : ""
+              }`}
+            >
+              <input
+                type="radio"
+                value="SCHEDULED"
+                checked={archiveOption === "SCHEDULED"}
+                onChange={() => setArchiveOption("SCHEDULED")}
+              />
+              <div className="radio-content">
+                <span className="radio-title">Archive & Delete in 30 Days</span>
+                <span className="radio-desc">
+                  Schedule for permanent deletion after 30 days
+                </span>
+              </div>
+            </label>
+          </div>
+
+          <label className="checkbox-option">
+            {/* Custom Checkbox handled via CSS accent-color or we can build a custom one. default with accent-color is fine for now. */}
             <input
               type="checkbox"
               checked={removeCollaborators}
               onChange={(e) => setRemoveCollaborators(e.target.checked)}
             />
-            Do you want to remove all collaborators?
-          </label>
-        </div>
-
-        <div className="modal-radio-group">
-          <label className="radio-label">
-            <input
-              type="radio"
-              value="SOFT"
-              checked={archiveOption === "SOFT"}
-              onChange={() => setArchiveOption("SOFT")}
-            />
-            <div>
-              <strong>Archive Only</strong>
-              <div className="radio-desc">
-                Soft delete (item remains recoverable)
-              </div>
-            </div>
-          </label>
-
-          <label className="radio-label">
-            <input
-              type="radio"
-              value="SCHEDULED"
-              checked={archiveOption === "SCHEDULED"}
-              onChange={() => setArchiveOption("SCHEDULED")}
-            />
-            <div>
-              <strong>Archive & Delete in 30 Days</strong>
-              <div className="radio-desc">
-                Schedule for permanent deletion after 30 days
-              </div>
-            </div>
+            <span className="checkbox-text">Remove all collaborators</span>
           </label>
         </div>
 
         <div className="modal-actions">
-          <button className="btn btn-secondary" onClick={onClose}>
+          <button className="btn-cancel" onClick={onClose}>
             Cancel
           </button>
-          <button className="btn btn-danger" onClick={handleConfirm}>
-            Archive
+          <button className="btn-confirm" onClick={handleConfirm}>
+            Confirm Archive
           </button>
         </div>
       </div>

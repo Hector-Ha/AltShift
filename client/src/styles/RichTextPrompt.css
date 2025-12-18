@@ -7,7 +7,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  max-height: 25vh;
+  height: 25vh;
   min-width: 0; /* Prevent flex overflow */
 }
 
@@ -69,7 +69,7 @@
   padding: 8px 12px;
   gap: 8px;
   border-top: 1px solid #f1f5f9;
-  background: #f8fafc;
+  background: #fcfcfc;
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
 }
@@ -85,6 +85,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 32px;
+  width: 32px;
 }
 
 .action-btn:hover:not(:disabled) {

@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #f8fafc;
+  background-color: var(--bg-body);
 }
 
 .profile-container {
@@ -14,51 +14,51 @@
 }
 
 .profile-header {
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-8);
 }
 
 .profile-title {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
 .profile-subtitle {
-  color: #64748b;
-  font-size: 1rem;
+  color: var(--text-secondary);
+  font-size: var(--font-size-base);
 }
 
 .profile-content {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--space-8);
 }
 
 .profile-section {
-  background-color: white;
-  border-radius: 12px;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
   padding: 2rem;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .section-header {
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 1rem;
 }
 
 .section-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--text-primary);
   margin-bottom: 0.25rem;
 }
 
 .section-description {
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--text-secondary);
 }
 
 .form-row {
@@ -74,35 +74,17 @@
   }
 }
 
-.btn-save {
-  margin-top: 1rem;
-  background-color: #0f172a;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.btn-save:hover {
-  background-color: #1e293b;
-}
-
-.btn-save:disabled {
-  background-color: #94a3b8;
-  cursor: not-allowed;
-}
+/* Replaces btn-save with btn-primary global class, keeping specific overrides if any */
+/* Removed btn-save definition as btn-primary should be used */
 
 .error-message {
-  color: #ef4444;
+  color: var(--error);
   font-size: 0.875rem;
   margin-top: 0.5rem;
 }
 
 .success-message {
-  color: #10b981;
+  color: var(--success);
   font-size: 0.875rem;
   margin-top: 0.5rem;
   font-weight: 500;
@@ -112,7 +94,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #64748b;
+  color: var(--text-secondary);
   text-decoration: none;
   font-weight: 500;
   margin-bottom: 1rem;
@@ -120,31 +102,28 @@
   transition: color 0.2s;
 }
 
-/* Existing content... */
-
-/* Refactored Profile Styles */
-
+/* Nav Buttons in Sidebar */
 .profile-nav-btn {
   border: none;
   background: transparent;
   width: 100%;
   text-align: left;
   cursor: pointer;
-  padding: 0.75rem 1rem; /* Added padding for better hit area */
-  border-radius: 6px;
-  color: #64748b;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
   font-weight: 500;
   transition: all 0.2s;
 }
 
 .profile-nav-btn:hover {
-  background-color: #f1f5f9;
-  color: #0f172a;
+  background-color: var(--bg-surface-secondary);
+  color: var(--text-primary);
 }
 
 .profile-nav-btn.active {
-  background-color: #e0e7ff; /* Indigo-50 */
-  color: #4f46e5; /* Indigo-600 */
+  background-color: var(--primary-color-light);
+  color: var(--primary-color);
 }
 
 .profile-main-content {
@@ -153,27 +132,27 @@
 }
 
 .profile-header-row {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
 }
 
 .profile-header-desc {
-  color: #64748b;
+  color: var(--text-secondary);
   margin-top: 0.5rem;
 }
 
 .profile-card {
-  background-color: white;
+  background-color: var(--bg-surface);
   padding: 2rem;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .profile-grid-row {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 
 @media (min-width: 640px) {
@@ -187,39 +166,39 @@
 }
 
 .profile-input-disabled {
-  background-color: #f1f5f9;
+  background-color: var(--bg-surface-secondary);
   cursor: not-allowed;
-  color: #64748b;
+  color: var(--text-secondary);
 }
 
 .profile-input-hint {
-  color: #94a3b8;
+  color: var(--text-tertiary);
   margin-top: 4px;
   display: block;
   font-size: 0.75rem;
 }
 
 .profile-divider {
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--border-color);
   margin: 1.5rem 0;
 }
 
 .profile-message {
   padding: 0.75rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   margin-bottom: 1rem;
   font-size: 0.875rem;
   font-weight: 500;
 }
 
 .profile-message.success {
-  background-color: #f0fdf4;
-  color: #10b981;
+  background-color: #f0fdf4; /* Keep pale green background */
+  color: var(--success);
 }
 
 .profile-message.error {
   background-color: #fef2f2;
-  color: #ef4444;
+  color: var(--error);
 }
 
 .profile-actions {

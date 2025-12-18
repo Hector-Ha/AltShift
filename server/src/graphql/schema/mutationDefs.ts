@@ -12,6 +12,7 @@ const mutationDefs = gql`
 
     # Create & Update
     createDocument(input: createDocumentInput!): Document!
+    generateAIContent(prompt: String!, context: String!): String!
     createDocumentWithAI(
       prompt: String!
       attachments: [AttachmentInput]

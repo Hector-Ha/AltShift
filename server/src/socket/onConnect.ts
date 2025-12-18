@@ -28,17 +28,17 @@ export const ioOnConnect = (
     ) => {
       console.log(`Socket connected: ${socket.id}`);
 
-      // Join User Room for personal notifications
+      // Join user room
       if (socket.data.user) {
         socket.join(`user:${socket.data.user._id.toString()}`);
 
-        // Sync initial active sessions (Active Now)
+        // Sync active sessions
         (async () => {
           try {
             const { DocumentModel } = await import("../models/MDocument.js");
             const userId = socket.data.user._id;
 
-            // Find all docs where user is owner or collaborator
+            // Find user docs
             const docs = await DocumentModel.find({
               $or: [{ owner: userId }, { collaborators: userId }],
             }).select("_id title owner collaborators");
@@ -48,7 +48,7 @@ export const ioOnConnect = (
               const room = io.sockets.adapter.rooms.get(roomId);
 
               if (room && room.size > 0) {
-                // Determine active users in this doc
+                // Find active users
                 const activeSockets = Array.from(room);
 
                 for (const clientId of activeSockets) {
@@ -132,7 +132,7 @@ export const ioOnConnect = (
             };
           });
 
-          // Emit current active users to the new joiner
+          // Emit active users
           socket.emit("active-users", activeUsers);
 
           // Broadcast new user to others

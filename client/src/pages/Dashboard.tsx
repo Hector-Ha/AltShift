@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { gql } from "@apollo/client";
 import { Link, useNavigate } from "react-router-dom";
-import Logo from "../components/Logo";
+import Logo from "../assets/logos/logo.svg";
 import type {
   GetDocumentsQuery,
   GetDocumentsQueryVariables,
@@ -14,6 +14,7 @@ import type {
 } from "../gql/graphql";
 import NotificationList from "../components/NotificationList";
 import RichTextPrompt from "../components/RichTextPrompt";
+import Dropdown from "../components/Dropdown";
 import "../styles/dashboard.css";
 
 const GET_DOCUMENTS = gql(`
@@ -66,8 +67,13 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<"ACTIVE" | "ARCHIVED">("ACTIVE");
   const [filter, setFilter] = useState("RECENTS");
+  const [sortOrder, setSortOrder] = useState<"NEWEST" | "OLDEST" | "AZ" | "ZA">(
+    "NEWEST"
+  );
   const [search, setSearch] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const userId = localStorage.getItem("userId");
 
   const { data: userData } = useQuery<any>(GET_USER_HEADER, {
@@ -91,6 +97,16 @@ const Dashboard: React.FC = () => {
     },
     fetchPolicy: "network-only",
   });
+
+  React.useEffect(() => {
+    if (error) {
+      navigate("/", {
+        state: {
+          message: "You are not authenticated, please try log in again",
+        },
+      });
+    }
+  }, [error, navigate]);
 
   const [createDocument] = useMutation<
     CreateDocumentMutation,
@@ -143,13 +159,31 @@ const Dashboard: React.FC = () => {
       return true;
     })
     .sort((a: any, b: any) => {
-      if (filter === "RECENTS" || true) {
-        return (
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        );
+      switch (sortOrder) {
+        case "NEWEST":
+          return (
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          );
+        case "OLDEST":
+          return (
+            new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+          );
+        case "AZ":
+          return a.title.localeCompare(b.title);
+        case "ZA":
+          return b.title.localeCompare(a.title);
+        default:
+          return 0;
       }
-      return 0;
     });
+
+  const handleSortChange = (order: "NEWEST" | "OLDEST" | "AZ" | "ZA") => {
+    setSortOrder(order);
+    if (filter === "RECENTS") {
+      setFilter("ALL");
+    }
+    setIsSortMenuOpen(false);
+  };
 
   if (loading)
     return (
@@ -167,52 +201,58 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard-layout">
       <nav className="dashboard-nav">
-        <div className="nav-brand">
-          <Logo />
-          <span>AltShift</span>
-        </div>
+        <Link to="/dashboard" className="nav-brand" style={{ gap: "6px" }}>
+          <img src={Logo} alt="AltShift Logo" width={32} height={32} />
+          <span style={{ fontSize: "18px" }}>AltShift</span>
+        </Link>
         <div className="nav-actions">
           <div className="profile-menu-container">
-            <button
-              className="profile-trigger"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            <Dropdown
+              isOpen={isMenuOpen}
+              onOpenChange={setIsMenuOpen}
+              align="right"
+              trigger={
+                <button className="profile-trigger">
+                  <div className="profile-avatar">
+                    {user?.profilePicture ? (
+                      <img src={user.profilePicture} alt="Profile" />
+                    ) : (
+                      initials
+                    )}
+                  </div>
+                  <span className="profile-name">
+                    {user?.personalInformation
+                      ? `${user.personalInformation.firstName} ${user.personalInformation.lastName}`
+                      : "User"}
+                  </span>
+                  <span className="material-icons profile-trigger-icon">
+                    expand_more
+                  </span>
+                </button>
+              }
             >
-              <div className="profile-avatar">
-                {user?.profilePicture ? (
-                  <img src={user.profilePicture} alt="Profile" />
-                ) : (
-                  initials
-                )}
-              </div>
-              <span className="profile-name">
-                {user?.personalInformation
-                  ? `${user.personalInformation.firstName} ${user.personalInformation.lastName}`
-                  : "User"}
-              </span>
-              <span className="material-icons profile-trigger-icon">
-                expand_more
-              </span>
-            </button>
-
-            {isMenuOpen && (
-              <div className="profile-dropdown">
-                <button
-                  className="profile-dropdown-item"
-                  onClick={() => navigate("/profile")}
-                >
-                  <span className="material-icons">person</span>
-                  Profile
-                </button>
-                <div className="profile-dropdown-divider" />
-                <button
-                  className="profile-dropdown-item"
-                  onClick={handleLogout}
-                >
-                  <span className="material-icons">logout</span>
-                  Logout
-                </button>
-              </div>
-            )}
+              <button
+                className="dropdown-item"
+                onClick={() => {
+                  navigate("/profile");
+                  setIsMenuOpen(false);
+                }}
+              >
+                <span className="material-icons">person</span>
+                Profile
+              </button>
+              <div className="dropdown-divider" />
+              <button
+                className="dropdown-item"
+                onClick={() => {
+                  handleLogout();
+                  setIsMenuOpen(false);
+                }}
+              >
+                <span className="material-icons">logout</span>
+                Logout
+              </button>
+            </Dropdown>
           </div>
         </div>
       </nav>
@@ -222,23 +262,117 @@ const Dashboard: React.FC = () => {
         <aside className="dashboard-sidebar">
           {/* Filter & Sort Row */}
           <div className="filter-row">
-            <select
-              className="form-select filter-select"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
+            <Dropdown
+              className="filter-select"
+              isOpen={isFilterMenuOpen}
+              onOpenChange={setIsFilterMenuOpen}
+              trigger={
+                <div className="filter-select-trigger">
+                  {filter === "RECENTS" && "Recents"}
+                  {filter === "ALL" && "All"}
+                  {filter === "OWNED" && "Owned"}
+                  {filter === "NOT_OWNED" && "Not Owned"}
+                </div>
+              }
             >
-              <option value="RECENTS">Recents</option>
-              <option value="ALL">All</option>
-              <option value="OWNED">Owned</option>
-              <option value="NOT_OWNED">Not Owned</option>
-            </select>
-            <button
-              className="filter-btn filter-btn-nowrap"
-              onClick={() => alert("Sort/Filter functionality coming soon!")}
-              title="More Filters & Sort"
-            >
-              Filter/Sort
-            </button>
+              <button
+                className={`dropdown-item ${
+                  filter === "RECENTS" ? "active" : ""
+                }`}
+                onClick={() => {
+                  setFilter("RECENTS");
+                  setIsFilterMenuOpen(false);
+                }}
+              >
+                Recents
+              </button>
+              <button
+                className={`dropdown-item ${filter === "ALL" ? "active" : ""}`}
+                onClick={() => {
+                  setFilter("ALL");
+                  setIsFilterMenuOpen(false);
+                }}
+              >
+                All
+              </button>
+              <button
+                className={`dropdown-item ${
+                  filter === "OWNED" ? "active" : ""
+                }`}
+                onClick={() => {
+                  setFilter("OWNED");
+                  setIsFilterMenuOpen(false);
+                }}
+              >
+                Owned
+              </button>
+              <button
+                className={`dropdown-item ${
+                  filter === "NOT_OWNED" ? "active" : ""
+                }`}
+                onClick={() => {
+                  setFilter("NOT_OWNED");
+                  setIsFilterMenuOpen(false);
+                }}
+              >
+                Not Owned
+              </button>
+            </Dropdown>
+
+            <div className="sort-dropdown-container">
+              <Dropdown
+                isOpen={isSortMenuOpen}
+                onOpenChange={setIsSortMenuOpen}
+                align="right"
+                trigger={
+                  <button
+                    className="filter-btn filter-btn-nowrap"
+                    title="Sort Documents"
+                  >
+                    <span
+                      className="material-icons"
+                      style={{ fontSize: "16px" }}
+                    >
+                      sort
+                    </span>
+                    Sort
+                  </button>
+                }
+              >
+                <button
+                  className={`dropdown-item ${
+                    sortOrder === "NEWEST" ? "active" : ""
+                  }`}
+                  onClick={() => handleSortChange("NEWEST")}
+                >
+                  Newest First
+                </button>
+                <button
+                  className={`dropdown-item ${
+                    sortOrder === "OLDEST" ? "active" : ""
+                  }`}
+                  onClick={() => handleSortChange("OLDEST")}
+                >
+                  Oldest First
+                </button>
+                <button
+                  className={`dropdown-item ${
+                    sortOrder === "AZ" ? "active" : ""
+                  }`}
+                  onClick={() => handleSortChange("AZ")}
+                >
+                  A-Z
+                </button>
+                <button
+                  className={`dropdown-item ${
+                    sortOrder === "ZA" ? "active" : ""
+                  }`}
+                  onClick={() => handleSortChange("ZA")}
+                >
+                  Z-A
+                </button>
+              </Dropdown>
+            </div>
           </div>
 
           {/* Search Row */}

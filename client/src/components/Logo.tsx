@@ -1,30 +1,31 @@
 import React from "react";
+import LogoImage from "../assets/logos/logo.svg";
+import LogoWhiteImage from "../assets/logos/logo-white.svg";
 
-const Logo: React.FC = () => {
+interface LogoProps {
+  className?: string;
+  variant?: "default" | "white";
+  width?: string | number;
+  height?: string | number;
+}
+
+const Logo: React.FC<LogoProps> = ({
+  className = "",
+  variant = "default",
+  width = 32,
+  height = 32,
+}) => {
+  const src = variant === "white" ? LogoWhiteImage : LogoImage;
+
   return (
-    <svg
-      width="32"
-      height="32"
-      viewBox="0 0 32 32"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <rect width="32" height="32" rx="6" fill="#4F46E5" />
-      <path
-        d="M16 8L24 16L16 24"
-        stroke="white"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M8 16H24"
-        stroke="white"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <img
+      src={src}
+      alt="AltShift Logo"
+      className={className}
+      width={width}
+      height={height}
+      style={{ objectFit: "contain" }}
+    />
   );
 };
 

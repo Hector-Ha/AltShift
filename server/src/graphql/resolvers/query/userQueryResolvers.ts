@@ -3,15 +3,14 @@ import { QueryResolvers } from "../../../generated/graphql.js";
 
 const userQueryResolvers: QueryResolvers = {
   getUserByID: async (_, { id }, context) => {
-    // Simple access
+    // Access
     const user = await UserModel.findById(id);
     if (!user) throw new Error("User not found");
     return user;
   },
 
   getAllUsers: async (_, __, context) => {
-    // Admin only in real app?
-    // Or used for searching collaborators
+    // Admin/Collab
     return await UserModel.find({});
   },
 

@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import "../styles/NewLogin.css";
+import { validatePassword } from "../utils/passwordValidation";
+import PasswordChecklist from "../components/PasswordChecklist";
 import { useMutation } from "@apollo/client/react";
 import { useNavigate, Link } from "react-router-dom";
 import { gql } from "../gql";
-import Logo from "../components/Logo";
+import LogoWhite from "../assets/logos/logo-white.svg";
+import LoginBg from "../assets/images/AltShift Login.jpg";
 import type {
   CreateUserMutation,
   CreateUserMutationVariables,
@@ -46,25 +49,6 @@ const Signup: React.FC = () => {
     },
   });
 
-  const validatePassword = (pwd: string) => {
-    const hasUpperCase = /[A-Z]/.test(pwd);
-    const hasLowerCase = /[a-z]/.test(pwd);
-    const hasNumber = /[0-9]/.test(pwd);
-    const hasSpecialChar = /[!@#$%^&*]/.test(pwd);
-    const isValidLength = pwd.length >= 8;
-
-    if (!isValidLength) return "Password must be at least 8 characters long.";
-    if (!hasUpperCase)
-      return "Password must contain at least one uppercase letter (A-Z).";
-    if (!hasLowerCase)
-      return "Password must contain at least one lowercase letter (a-z).";
-    if (!hasNumber) return "Password must contain at least one number (0-9).";
-    if (!hasSpecialChar)
-      return "Password must contain at least one special character (!@#$%^&*).";
-
-    return null;
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setValidationError(null);
@@ -98,16 +82,24 @@ const Signup: React.FC = () => {
 
   return (
     <div className="login-page">
-      <div className="login-brand-section">
-        <div className="brand-header">
-          <Logo />
-          <span>AltShift</span>
+      <div
+        className="login-brand-section"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url("${LoginBg}")`,
+          backgroundSize: "cover",
+          backgroundPosition: "center center",
+        }}
+      >
+        <div className="brand-header" style={{ gap: "6px" }}>
+          <img src={LogoWhite} alt="AltShift Logo" width={32} height={32} />
+          <span style={{ fontSize: "18px" }}>AltShift</span>
         </div>
         <div className="brand-content">
-          <blockquote className="brand-quote">
-            "Join usage today and experience the future of document
-            collaboration."
-          </blockquote>
+          <div className="attribution-card">
+            <p className="quote">
+              "Experience the future of document collaboration."
+            </p>
+          </div>
         </div>
       </div>
 
@@ -119,10 +111,10 @@ const Signup: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
-            <div className="form-row">
+            <div className="form-row" style={{ marginBottom: 0 }}>
               <div className="form-group half-width">
                 <input
-                  className="form-input"
+                  className="input-field"
                   type="text"
                   placeholder="First Name"
                   value={firstName}
@@ -132,7 +124,7 @@ const Signup: React.FC = () => {
               </div>
               <div className="form-group half-width">
                 <input
-                  className="form-input"
+                  className="input-field"
                   type="text"
                   placeholder="Last Name"
                   value={lastName}
@@ -144,7 +136,7 @@ const Signup: React.FC = () => {
 
             <div className="form-group">
               <input
-                className="form-input"
+                className="input-field"
                 type="text"
                 placeholder="Job Title (Optional)"
                 value={jobTitle}
@@ -154,7 +146,7 @@ const Signup: React.FC = () => {
 
             <div className="form-group">
               <input
-                className="form-input"
+                className="input-field"
                 type="text"
                 placeholder="Organization / Company"
                 value={organization}
@@ -165,7 +157,7 @@ const Signup: React.FC = () => {
 
             <div className="form-group">
               <input
-                className="form-input"
+                className="input-field"
                 type="email"
                 placeholder="name@example.com"
                 value={email}
@@ -176,18 +168,19 @@ const Signup: React.FC = () => {
 
             <div className="form-group">
               <input
-                className="form-input"
+                className="input-field"
                 type="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              {password && <PasswordChecklist password={password} />}
             </div>
 
             <div className="form-group">
               <input
-                className="form-input"
+                className="input-field"
                 type="password"
                 placeholder="Confirm Password"
                 value={confirmPassword}
@@ -196,7 +189,11 @@ const Signup: React.FC = () => {
               />
             </div>
 
-            <button type="submit" className="submit-btn" disabled={loading}>
+            <button
+              type="submit"
+              className="btn btn-primary auth-submit-btn"
+              disabled={loading}
+            >
               {loading ? "Creating Account..." : "Sign Up"}
             </button>
           </form>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { gql } from "@apollo/client";
-import Logo from "../components/Logo";
+import Logo from "../assets/logos/logo.svg";
 import "../styles/dashboard.css";
 import "../styles/profile.css";
 
@@ -74,14 +74,13 @@ const Profile: React.FC = () => {
     text: string;
   } | null>(null);
 
-  // Fetch standard profile data
+  // Fetch profile
   const { data, loading, error } = useQuery<any>(GET_USER_PROFILE, {
     variables: { id: userId || "" },
     skip: !userId,
   });
 
-  // Fetch header data (avatar etc) separately or reuse cached if smart enough,
-  // but to be safe and consistent with Dashboard we fetch what we need.
+  // Fetch header data
 
   useEffect(() => {
     if (data?.getUserByID?.personalInformation) {
@@ -204,10 +203,10 @@ const Profile: React.FC = () => {
     <div className="dashboard-layout">
       {/* Navbar copied from Dashboard for consistency */}
       <nav className="dashboard-nav">
-        <div className="nav-brand">
-          <Logo />
-          <span>AltShift</span>
-        </div>
+        <Link to="/dashboard" className="nav-brand" style={{ gap: "6px" }}>
+          <img src={Logo} alt="AltShift Logo" width={32} height={32} />
+          <span style={{ fontSize: "18px" }}>AltShift</span>
+        </Link>
         <div className="nav-actions">
           <Link to="/dashboard" className="btn nav-back-link">
             Back to Dashboard
@@ -218,7 +217,7 @@ const Profile: React.FC = () => {
       <div className="dashboard-container">
         {/* Sidebar - Settings Navigation */}
         <aside className="dashboard-sidebar">
-          <div className="section-title">Account Settings</div>
+          <h3>Account Settings</h3>
           <div className="documents-list">
             {" "}
             {/* Reusing doc list styles for sidebar items */}
@@ -263,7 +262,7 @@ const Profile: React.FC = () => {
                       <label className="form-label">First Name</label>
                       <input
                         type="text"
-                        className="form-input"
+                        className="input-field"
                         value={formData.firstName}
                         onChange={(e) =>
                           setFormData({
@@ -278,7 +277,7 @@ const Profile: React.FC = () => {
                       <label className="form-label">Last Name</label>
                       <input
                         type="text"
-                        className="form-input"
+                        className="input-field"
                         value={formData.lastName}
                         onChange={(e) =>
                           setFormData({ ...formData, lastName: e.target.value })
@@ -293,7 +292,7 @@ const Profile: React.FC = () => {
                       <label className="form-label">Job Title</label>
                       <input
                         type="text"
-                        className="form-input"
+                        className="input-field"
                         value={formData.jobTitle}
                         onChange={(e) =>
                           setFormData({ ...formData, jobTitle: e.target.value })
@@ -304,7 +303,7 @@ const Profile: React.FC = () => {
                       <label className="form-label">Organization</label>
                       <input
                         type="text"
-                        className="form-input"
+                        className="input-field"
                         value={formData.organization}
                         onChange={(e) =>
                           setFormData({
@@ -322,7 +321,7 @@ const Profile: React.FC = () => {
                       <label className="form-label">Date of Birth</label>
                       <input
                         type="date"
-                        className="form-input"
+                        className="input-field"
                         value={formData.DOB}
                         onChange={(e) =>
                           setFormData({ ...formData, DOB: e.target.value })
@@ -333,7 +332,7 @@ const Profile: React.FC = () => {
                       <label className="form-label">Email Address</label>
                       <input
                         type="email"
-                        className="form-input profile-input-disabled"
+                        className="input-field profile-input-disabled"
                         value={data?.getUserByID?.email || ""}
                         disabled
                       />
@@ -383,7 +382,7 @@ const Profile: React.FC = () => {
                     <label className="form-label">Current Password</label>
                     <input
                       type="password"
-                      className="form-input"
+                      className="input-field"
                       value={passwordData.oldPassword}
                       onChange={(e) =>
                         setPasswordData({
@@ -402,7 +401,7 @@ const Profile: React.FC = () => {
                       <label className="form-label">New Password</label>
                       <input
                         type="password"
-                        className="form-input"
+                        className="input-field"
                         value={passwordData.newPassword}
                         onChange={(e) =>
                           setPasswordData({
@@ -418,7 +417,7 @@ const Profile: React.FC = () => {
                       <label className="form-label">Confirm New Password</label>
                       <input
                         type="password"
-                        className="form-input"
+                        className="input-field"
                         value={passwordData.confirmPassword}
                         onChange={(e) =>
                           setPasswordData({

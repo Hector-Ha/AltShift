@@ -9,7 +9,7 @@ export const onDisconnect = (socket: Socket, io: Server) => {
   socket.on(SOCKET_EVENTS.DISCONNECT, async () => {
     console.log(`Socket disconnected: ${socket.id}`);
 
-    // Broadcast active presence
+    // Broadcast presence
     if (socket.data.documentID && socket.data.user) {
       const docId = socket.data.documentID;
       const user = socket.data.user;
@@ -38,7 +38,7 @@ export const onDisconnect = (socket: Socket, io: Server) => {
       }
     }
 
-    // Notify about unsaved changes
+    // Notify unsaved
     if (
       socket.data.documentID &&
       socket.data.hasUnsavedChanges &&
@@ -77,7 +77,7 @@ export const onDisconnect = (socket: Socket, io: Server) => {
             const inserted = await NotificationModel.insertMany(notifications);
             console.log(`Created ${inserted.length} notifications.`);
 
-            // Emit real-time notification to recipients
+            // Emit notification
             inserted.forEach((notif) => {
               const recId = notif.recipient.toString();
               io.to(`user:${recId}`).emit("new-notification", notif);

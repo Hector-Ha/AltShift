@@ -7,13 +7,29 @@ import crypto from "crypto";
 import { sendEmail } from "../../../utils/emailService.js";
 
 import { IPersonalInformation, IUser } from "../../../interfaces/IUser.js";
+import { sanitizeUser, validateEmail } from "../../../utils/sanitize.js";
 
 const userMutationResolvers: MutationResolvers = {
   createUser: async (_parent, { input }, context) => {
     const JWT_SECRET = process.env.JWT_SECRET || "";
+
+    // Sanitize
+    const sanitizedInput = sanitizeUser(input);
+    const email = validateEmail(input.email);
+
+    // Validate password
+    if (input.password.length < 6)
+      throw new Error("Password must be at least 6 characters");
+
+    // Check existing
+    const existingUser = await UserModel.findOne({ email });
+    if (existingUser) throw new Error("Email already exists");
+
     const hashedPassword = await bcrypt.hash(input.password, 12);
     const newUser = await UserModel.create({
       ...input,
+      ...sanitizedInput, // Overwrites keys with sanitized versions
+      email,
       password: hashedPassword,
     });
 
@@ -31,17 +47,27 @@ const userMutationResolvers: MutationResolvers = {
 
     const { email, personalInformation, profilePicture } = input;
 
+    const sanitizedUpdates = sanitizeUser(input);
+
+    if (email) {
+      // Validate email
+    }
+
     const updatedPersonalInformation: IPersonalInformation = {
       firstName:
-        personalInformation?.firstName ||
+        sanitizedUpdates.personalInformation?.firstName ||
+        personalInformation?.firstName || // Fallback
         context.user.personalInformation.firstName,
       lastName:
+        sanitizedUpdates.personalInformation?.lastName ||
         personalInformation?.lastName ||
         context.user.personalInformation.lastName,
       jobTitle:
+        sanitizedUpdates.personalInformation?.jobTitle ||
         personalInformation?.jobTitle ||
         context.user.personalInformation.jobTitle,
       organization:
+        sanitizedUpdates.personalInformation?.organization ||
         personalInformation?.organization ||
         context.user.personalInformation.organization,
       DOB: personalInformation?.DOB || context.user.personalInformation.DOB,
@@ -52,7 +78,7 @@ const userMutationResolvers: MutationResolvers = {
     const updatedUser = await UserModel.findByIdAndUpdate(
       userID,
       {
-        email: email || context.user.email,
+        email: email ? validateEmail(email) : context.user.email,
         personalInformation: updatedPersonalInformation,
         profilePicture: profilePicture,
       },
