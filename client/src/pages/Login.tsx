@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import "../styles/NewLogin.css";
 import { useMutation } from "@apollo/client/react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { gql } from "../gql";
-import Logo from "../components/Logo";
+import LogoWhite from "../assets/logos/logo-white.svg";
+import LoginBg from "../assets/images/AltShift Login.jpg";
 import type { LoginMutation, LoginMutationVariables } from "../gql/graphql";
 
 const LOGIN_MUTATION = gql(`
@@ -20,8 +21,18 @@ const LOGIN_MUTATION = gql(`
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (location.state?.message) {
+      setAuthError(location.state.message);
+      // Clear state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const [login, { loading, error }] = useMutation<
     LoginMutation,
@@ -45,22 +56,29 @@ const Login: React.FC = () => {
 
   return (
     <div className="login-page">
-      {/* Left Side - Brand */}
-      <div className="login-brand-section">
-        <div className="brand-header">
-          <Logo />
-          <span>AltShift</span>
+      {/* Brand */}
+      <div
+        className="login-brand-section"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url("${LoginBg}")`,
+          backgroundSize: "cover",
+          backgroundPosition: "center center",
+        }}
+      >
+        <div className="brand-header" style={{ gap: "6px" }}>
+          <img src={LogoWhite} alt="AltShift Logo" width={32} height={32} />
+          <span style={{ fontSize: "18px" }}>AltShift</span>
         </div>
         <div className="brand-content">
-          <blockquote className="brand-quote">
-            "This document editor has completely transformed how our team
-            collaborates. It's fast, intuitive, and beautiful."
-          </blockquote>
-          <div className="brand-author">Sofia Davis, Product Designer</div>
+          <div className="attribution-card">
+            <p className="quote">
+              "Experience the future of document collaboration."
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Right Side - Form */}
+      {/* Form */}
       <div className="login-form-section">
         <div className="login-form-container">
           <div className="form-header">
@@ -68,10 +86,24 @@ const Login: React.FC = () => {
             <p>Enter your email below to login to your account</p>
           </div>
 
+          {authError && (
+            <div
+              className="error-message"
+              style={{
+                marginBottom: "20px",
+                backgroundColor: "rgba(239, 68, 68, 0.1)",
+                border: "1px solid var(--error)",
+                color: "var(--error)",
+              }}
+            >
+              <p>{authError}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="form-group">
               <input
-                className="form-input"
+                className="input-field"
                 type="email"
                 placeholder="name@example.com"
                 value={email}
@@ -82,7 +114,7 @@ const Login: React.FC = () => {
 
             <div className="form-group">
               <input
-                className="form-input"
+                className="input-field"
                 type="password"
                 placeholder="Password"
                 value={password}
@@ -97,7 +129,11 @@ const Login: React.FC = () => {
               </Link>
             </div>
 
-            <button type="submit" className="submit-btn" disabled={loading}>
+            <button
+              type="submit"
+              className="btn btn-primary auth-submit-btn"
+              disabled={loading}
+            >
               {loading ? "Signing In..." : "Sign In"}
             </button>
           </form>

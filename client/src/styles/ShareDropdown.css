@@ -1,67 +1,4 @@
-.share-dropdown-container {
-  position: relative;
-  display: inline-block;
-  margin-left: 10px;
-}
-
-.share-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  background-color: white;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.share-btn:enabled {
-  cursor: pointer;
-  opacity: 1;
-}
-
-.share-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.share-btn-icon {
-  font-size: 18px;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 5px;
-  background-color: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  z-index: 50;
-  min-width: 150px;
-  overflow: hidden;
-}
-
-.dropdown-item {
-  padding: 10px 16px;
-  cursor: pointer;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  transition: background-color 0.2s;
-}
-
-.dropdown-item:hover {
-  background-color: #f8fafc;
-}
-
-.dropdown-item-icon {
-  font-size: 18px;
-}
-
+/* Shared Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -73,51 +10,251 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(2px);
 }
 
 .modal-content {
-  background-color: white;
-  padding: 24px;
-  border-radius: 8px;
-  width: 400px;
+  background-color: var(--bg-surface);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
   max-width: 90%;
+  box-shadow: var(--shadow-xl);
+  animation: modalFadeIn 0.2s ease-out;
 }
 
-.modal-title {
-  margin-top: 0;
+/* Share Dialog Specifics */
+.share-dialog {
+  min-width: 450px;
 }
 
-.link-copy-container {
+.share-header {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.link-input {
-  flex: 1;
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #cbd5e1;
+.share-header h3 {
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
+  margin: 0;
 }
 
-.copy-btn {
-  padding: 8px 12px;
-  border-radius: 4px;
+.close-btn {
+  background: none;
   border: none;
-  background-color: #3b82f6;
-  color: white;
+  font-size: 24px;
   cursor: pointer;
+  color: var(--text-secondary);
+  padding: var(--space-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
 }
 
-.modal-actions {
+.close-btn:hover {
+  background-color: var(--bg-surface-secondary);
+  color: var(--text-primary);
+}
+
+/* Tabs */
+.share-tabs {
   display: flex;
-  justify-content: flex-end;
+  gap: var(--space-4);
+  /* margin-bottom: var(--space-6); */
+  border-bottom: 1px solid var(--border-color);
+}
+
+.share-tabs button {
+  background: none;
+  border: none;
+  padding: var(--space-2) var(--space-1);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  transition: all 0.2s;
+}
+
+.share-tabs button:hover {
+  color: var(--text-primary);
+}
+
+.share-tabs button.active {
+  border-bottom-color: var(--primary-color);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* User List */
+.user-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s;
+}
+
+.user-item:last-child {
+  border-bottom: none;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-info strong {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+}
+
+.user-info small {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: var(--error);
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s;
+}
+
+.remove-btn:hover {
+  background-color: #fef2f2; /* Light error bg */
+}
+
+/* Inputs & Forms */
+.link-input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-3);
+}
+
+.link-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-light);
 }
 
 .modal-done-btn {
-  padding: 8px 16px;
-  border-radius: 4px;
-  border: 1px solid #cbd5e1;
-  background-color: transparent;
+  width: 100%;
+  padding: var(--space-2);
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 500;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.modal-done-btn:hover {
+  background-color: var(--primary-color-hover);
+}
+
+.modal-done-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* General Access / Link Section */
+.link-section {
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-color);
+}
+
+.link-section h4 {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.link-section select {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.copy-link-box {
+  display: flex;
+  margin-top: var(--space-3);
+  gap: var(--space-2);
+}
+
+.copy-link-box input {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface-secondary);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.copy-link-box button {
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-link-box button:hover {
+  background-color: var(--bg-surface-secondary);
+  border-color: var(--text-tertiary);
+}
+
+/* Dropdown specific styles (if needed for the launch button) */
+.share-dropdown-container {
+  position: relative;
+  display: inline-block;
+  margin-left: var(--space-2);
+}
+
+.share-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.share-btn:hover {
+  background-color: var(--primary-color-hover);
 }

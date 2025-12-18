@@ -103,6 +103,7 @@ export type Mutation = {
   deleteUser: Scalars['DateTime']['output'];
   duplicateDocument: Document;
   forgotPassword: Scalars['Boolean']['output'];
+  generateAIContent: Scalars['String']['output'];
   hardDeleteDocument: Scalars['Boolean']['output'];
   hardDeleteUser: Scalars['Boolean']['output'];
   inviteCollaborator: Document;
@@ -203,6 +204,12 @@ export type MutationDuplicateDocumentArgs = {
 
 export type MutationForgotPasswordArgs = {
   email: Scalars['String']['input'];
+};
+
+
+export type MutationGenerateAiContentArgs = {
+  context: Scalars['String']['input'];
+  prompt: Scalars['String']['input'];
 };
 
 
@@ -602,6 +609,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteUser?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'userID'>>;
   duplicateDocument?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationDuplicateDocumentArgs, 'documentID'>>;
   forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'email'>>;
+  generateAIContent?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationGenerateAiContentArgs, 'context' | 'prompt'>>;
   hardDeleteDocument?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationHardDeleteDocumentArgs, 'documentID'>>;
   hardDeleteUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationHardDeleteUserArgs, 'userID'>>;
   inviteCollaborator?: Resolver<ResolversTypes['Document'], ParentType, ContextType, RequireFields<MutationInviteCollaboratorArgs, 'documentID' | 'email'>>;

@@ -2,6 +2,7 @@ import React, { useMemo, useState, useCallback } from "react";
 import { createEditor, type Descendant, Node } from "slate";
 import { Slate, Editable, withReact } from "slate-react";
 import { withHistory } from "slate-history";
+import { Paperclip, Send, File } from "lucide-react";
 import "../styles/RichTextPrompt.css";
 
 interface Attachment {
@@ -110,7 +111,7 @@ const RichTextPrompt: React.FC<RichTextPromptProps> = ({
             <div className="attachments-list">
               {attachments.map((file, i) => (
                 <div key={i} className="attachment-chip">
-                  <span className="file-icon">📄</span>
+                  <File size={14} className="file-icon" />
                   <span className="file-name">{file.name}</span>
                   <button
                     onClick={() => removeAttachment(i)}
@@ -139,19 +140,7 @@ const RichTextPrompt: React.FC<RichTextPromptProps> = ({
             title="Attach"
             disabled={loading}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
-            </svg>
+            <Paperclip size={20} />
           </button>
           <button
             className="action-btn send-btn"
@@ -164,20 +153,7 @@ const RichTextPrompt: React.FC<RichTextPromptProps> = ({
             {loading ? (
               <span className="spinner">...</span>
             ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-              </svg>
+              <Send size={20} />
             )}
           </button>
         </div>

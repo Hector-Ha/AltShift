@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Dropdown from "./Dropdown";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { gql } from "../gql";
 import type { DocumentStatus } from "../gql/graphql";
@@ -83,6 +84,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 }) => {
   const [email, setEmail] = useState("");
   const [activeTab, setActiveTab] = useState<"invite" | "manage">("invite");
+  const [isVisibilityMenuOpen, setIsVisibilityMenuOpen] = useState(false);
 
   const {
     data,
@@ -189,17 +191,48 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
 
             <div className="link-section">
               <h4>General Access</h4>
-              <select
-                value={currentVisibility}
-                onChange={(e) =>
-                  handleVisibilityChange(e.target.value as DocumentStatus)
+              <Dropdown
+                className="full-width"
+                isOpen={isVisibilityMenuOpen}
+                onOpenChange={(v) => isOwner && setIsVisibilityMenuOpen(v)}
+                trigger={
+                  <div
+                    className={`select-trigger ${!isOwner ? "disabled" : ""}`}
+                  >
+                    {currentVisibility === "PRIVATE" && "Restricted (Private)"}
+                    {currentVisibility === "SHARED" && "Restricted (Shared)"}
+                    {currentVisibility === "PUBLIC" && "Anyone with the link"}
+                  </div>
                 }
-                disabled={!isOwner}
               >
-                <option value="PRIVATE">Restricted (Private)</option>
-                <option value="SHARED">Restricted (Shared)</option>
-                <option value="PUBLIC">Anyone with the link</option>
-              </select>
+                <button
+                  className="dropdown-item"
+                  onClick={() => {
+                    handleVisibilityChange("PRIVATE");
+                    setIsVisibilityMenuOpen(false);
+                  }}
+                >
+                  Restricted (Private)
+                </button>
+                <button
+                  className="dropdown-item"
+                  onClick={() => {
+                    handleVisibilityChange("SHARED");
+                    setIsVisibilityMenuOpen(false);
+                  }}
+                >
+                  Restricted (Shared)
+                </button>
+                <button
+                  className="dropdown-item"
+                  onClick={() => {
+                    handleVisibilityChange("PUBLIC");
+                    setIsVisibilityMenuOpen(false);
+                  }}
+                >
+                  Anyone with the link
+                </button>
+              </Dropdown>
 
               {currentVisibility === "PUBLIC" && (
                 <div className="copy-link-box">
@@ -223,12 +256,13 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
               <>
                 <div className="user-item">
                   <span className="user-info">
-                    <strong>
-                      {data?.getDocumentByID?.owner?.personalInformation
-                        ?.firstName || "Owner"}
-                    </strong>{" "}
-                    (Owner)
-                    <br />
+                    <div>
+                      <strong>
+                        {data?.getDocumentByID?.owner?.personalInformation
+                          ?.firstName || "Owner"}
+                      </strong>{" "}
+                      <small>(Owner)</small>
+                    </div>
                     <small>{data?.getDocumentByID?.owner?.email}</small>
                   </span>
                 </div>
@@ -254,11 +288,12 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
                 {data?.getDocumentByID?.invitations?.map((u: any) => (
                   <div key={u.id} className="user-item pending">
                     <span className="user-info">
-                      <strong>
-                        {u.personalInformation?.firstName || "User"}
-                      </strong>{" "}
-                      (Pending)
-                      <br />
+                      <div>
+                        <strong>
+                          {u.personalInformation?.firstName || "User"}
+                        </strong>{" "}
+                        <small className="status">(Pending)</small>
+                      </div>
                       <small>{u.email}</small>
                     </span>
                     {isOwner && (
@@ -276,20 +311,6 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
           </div>
         )}
       </div>
-      <style>{`
-        .share-dialog { min-width: 400px; }
-        .share-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;}
-        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
-        .share-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #eee; }
-        .share-tabs button { background: none; border: none; padding: 10px; cursor: pointer; border-bottom: 2px solid transparent;}
-        .share-tabs button.active { border-bottom-color: #007bff; font-weight: bold; }
-        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
-        .remove-btn { background: none; border: none; color: red; cursor: pointer; font-size: 0.9em; }
-        .link-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
-        .link-section select { width: 100%; padding: 8px; margin-top: 5px; }
-        .copy-link-box { display: flex; margin-top: 10px; gap: 5px; }
-        .copy-link-box input { flex: 1; padding: 5px; }
-      `}</style>
     </div>
   );
 };

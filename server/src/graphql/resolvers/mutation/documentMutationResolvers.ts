@@ -9,6 +9,7 @@ const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
 import mammoth from "mammoth";
 import { markdownToSlate } from "../../../utils/markdownToSlate.js";
+import { sanitizeDocumentInput } from "../../../utils/sanitize.js";
 
 const documentMutationResolvers: MutationResolvers = {
   createDocument: async (_, { input }, context) => {
@@ -37,21 +38,23 @@ const documentMutationResolvers: MutationResolvers = {
       for (const file of attachments) {
         if (!file) continue;
         try {
+          // Allowed types
+          const allowedMimes = [
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // docx
+            "text/plain",
+            "text/markdown",
+          ];
+
+          if (!allowedMimes.includes(file.mimeType)) {
+            console.warn(`Blocked attachment with mime type: ${file.mimeType}`);
+            continue; // Skip unsupported files
+          }
+
           // content is base64 string
           const buffer = Buffer.from(file.content, "base64");
           let extractedText = "";
 
-          if (file.mimeType === "application/pdf") {
-            try {
-              // Dynamic require to prevent startup crash if module has issues
-              const pdf = require("pdf-parse");
-              const data = await pdf(buffer);
-              extractedText = data.text;
-            } catch (e) {
-              console.error("PDF Parse Error:", e);
-              extractedText = "[Error parsing PDF: Library issue]";
-            }
-          } else if (
+          if (
             file.mimeType ===
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
           ) {
@@ -67,7 +70,7 @@ const documentMutationResolvers: MutationResolvers = {
           if (extractedText && extractedText.trim().length > 0) {
             contextText += `\n\n--- Attachment: ${
               file.name
-            } ---\n${extractedText.substring(0, 100000)}`; // Simple safety cap
+            } ---\n${extractedText.substring(0, 100000)}`; // Caps content
           }
         } catch (err: any) {
           console.error(`Failed to parse attachment ${file.name}:`, err);
@@ -79,9 +82,14 @@ const documentMutationResolvers: MutationResolvers = {
     try {
       const systemContent =
         "You are a helpful assistant that generates detailed document content. Return only the content in Markdown format. Do not include introductory text like 'Here is the document:'.";
+
+      // Sanitize prompt
+      const cleanPrompt =
+        sanitizeDocumentInput({ title: prompt }).title || prompt;
+
       const userContent = contextText
-        ? `${prompt}\n\nAdditional Context from files:${contextText}`
-        : prompt;
+        ? `${cleanPrompt}\n\nAdditional Context from files:${contextText}`
+        : cleanPrompt;
 
       const response = await fetch(
         "https://api.groq.com/openai/v1/chat/completions",
@@ -116,11 +124,11 @@ const documentMutationResolvers: MutationResolvers = {
       const data: any = await response.json();
       const content = data.choices[0]?.message?.content || "";
 
-      // Simple title extraction
+      // Extract title
       let title = "AI Generated Document";
       const firstLine = content.split("\n")[0];
       if (firstLine && firstLine.length < 100) {
-        // Strip common markdown symbols: #, *, _, [, ]
+        // Strip symbols
         title = firstLine
           .replace(/^[\s#*_\->]+/, "")
           .replace(/[*_\[\]]/g, "")
@@ -166,6 +174,11 @@ const documentMutationResolvers: MutationResolvers = {
       (c) => c.toString() === context.user._id.toString()
     );
 
+    // Sanitize
+    if (input.title) {
+      sanitizeDocumentInput(input);
+    }
+
     if (input.title) {
       if (!isOwner && !isCollaborator)
         throw new Error("Not Authorized to update title");
@@ -191,7 +204,7 @@ const documentMutationResolvers: MutationResolvers = {
       // Sync deprecated field
       document.isPublic = input.visibility === "PUBLIC";
 
-      // Handle switching to PRIVATE: Remove all collaborators and invitees
+      // Handle switching to PRIVATE
       if (input.visibility === "PRIVATE") {
         const removedCollaborators = [...document.collaborators];
         const removedInvitations = [...document.invitations];
@@ -597,7 +610,7 @@ const documentMutationResolvers: MutationResolvers = {
       await NotificationModel.create({
         recipient: document.owner,
         sender: userId,
-        type: NotificationType.DOCUMENT_UPDATE, // Or a new type DOCUMENT_INVITE_ACCEPTED if available, reusing UPDATE for now
+        type: NotificationType.DOCUMENT_UPDATE, // Reuse UPDATE
         document: document._id,
         message: `${context.user.email} accepted your invitation to edit "${document.title}"`,
         read: false,
@@ -685,7 +698,7 @@ const documentMutationResolvers: MutationResolvers = {
       (id) => id.toString() !== input.newOwnerID
     );
 
-    // If Private, switching ownership while keeping old owner as collaborator implies Sharing
+    // Update visibility
     if (document.visibility === "PRIVATE") {
       document.visibility = "SHARED";
       document.isPublic = false;
@@ -693,11 +706,11 @@ const documentMutationResolvers: MutationResolvers = {
 
     await document.save();
 
-    // NOTIFICATION: Ownership Transfer
+    // Notification
     await NotificationModel.create({
       recipient: new Types.ObjectId(input.newOwnerID),
       sender: context.user._id,
-      type: NotificationType.DOCUMENT_UPDATE, // Or OWNERSHIP_TRANSFER if specific type desired
+      type: NotificationType.DOCUMENT_UPDATE, // Ownership transfer
       document: document._id,
       message: `${context.user.email} transferred ownership of "${document.title}" to you`,
       read: false,

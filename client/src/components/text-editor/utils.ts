@@ -40,10 +40,10 @@ export type ListItemElement = {
 
 export type PageElement = {
   type: "page";
-  children: (CustomElement | CustomText)[]; // Pages contain other blocks
+  children: (CustomElement | CustomText)[]; // Contains blocks
 };
 
-// Break down CustomElement to allow for Pages that contain other Elements
+// Element types
 export type CustomElement =
   | { type: "paragraph"; align?: string; children: CustomText[] }
   | { type: "heading-one"; align?: string; children: CustomText[] }

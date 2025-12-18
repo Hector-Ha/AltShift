@@ -3,7 +3,7 @@ import "../styles/NewLogin.css";
 import { useMutation } from "@apollo/client/react";
 import { Link } from "react-router-dom";
 import { gql } from "../gql";
-import Logo from "../components/Logo";
+import LogoWhite from "../assets/logos/logo-white.svg";
 import type {
   ForgotPasswordMutation,
   ForgotPasswordMutationVariables,
@@ -23,7 +23,7 @@ const ForgotPassword: React.FC = () => {
     ForgotPasswordMutation,
     ForgotPasswordMutationVariables
   >(FORGOT_PASSWORD_MUTATION, {
-    onCompleted: (data) => {
+    onCompleted: () => {
       setSuccess(true);
     },
   });
@@ -36,12 +36,11 @@ const ForgotPassword: React.FC = () => {
   return (
     <div className="login-page">
       <div className="login-brand-section">
-        <div className="brand-header">
-          <Logo />
-          <span>AltShift</span>
+        <div className="brand-header" style={{ gap: "6px" }}>
+          <img src={LogoWhite} alt="AltShift Logo" width={32} height={32} />
+          <span style={{ fontSize: "18px" }}>AltShift</span>
         </div>
       </div>
-
       <div className="login-form-section">
         <div className="login-form-container">
           <div className="form-header">
@@ -56,7 +55,7 @@ const ForgotPassword: React.FC = () => {
             <form onSubmit={handleSubmit} className="auth-form">
               <div className="form-group">
                 <input
-                  className="form-input"
+                  className="input-field"
                   type="email"
                   placeholder="name@example.com"
                   value={email}
@@ -65,7 +64,11 @@ const ForgotPassword: React.FC = () => {
                 />
               </div>
 
-              <button type="submit" className="submit-btn" disabled={loading}>
+              <button
+                type="submit"
+                className="btn btn-primary auth-submit-btn"
+                disabled={loading}
+              >
                 {loading ? "Sending..." : "Send Reset Link"}
               </button>
             </form>

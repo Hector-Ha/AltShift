@@ -1,52 +1,51 @@
 .notification-grid-container {
   display: grid;
   grid-template-columns: 5fr 2fr;
-  gap: 1.5rem;
-  margin-top: 2rem;
+  gap: var(--space-6);
+  margin-top: var(--space-8);
   align-items: start;
 }
 
 .updates-panel {
-  background: #f9fafb;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  padding: 1rem;
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: var(--space-4);
   min-width: 0;
-  max-height: 40vh;
+  height: 45vh;
   overflow-y: auto;
 }
 
 .active-panel {
-  background: #ecfdf5;
-  background: #ffffff;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  padding: 1rem;
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: var(--space-4);
   min-width: 0;
   height: fit-content;
-  max-height: 40vh;
+  max-height: 45vh;
   overflow-y: auto;
 }
 
 /* Inner content for Active */
 .active-sessions-content h4,
 .no-active-sessions h4 {
-  margin: 0 0 1rem 0;
+  margin: 0 0 var(--space-4) 0;
   font-size: 0.9rem;
-  color: #111827;
+  color: var(--text-primary);
   font-weight: 600;
-  border-bottom: 1px solid #f3f4f6;
-  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-2);
 }
 
 .active-session-block {
   font-size: 0.85rem;
-  color: #064e3b;
-  background: #ecfdf5; /* Green block inside white panel */
+  color: #064e3b; /* Keep specific green for active status, or use success var */
+  background: #ecfdf5;
   border: 1px solid #a7f3d0;
   padding: 0.75rem;
   margin-bottom: 0.75rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   word-wrap: break-word;
 }
 
@@ -63,7 +62,7 @@
 
 .no-activity-msg {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-style: italic;
   margin: 0;
 }
@@ -75,43 +74,43 @@
   margin: 0;
 }
 .notification-item {
-  padding: 0.75rem;
-  border-bottom: 1px solid #eee;
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--border-color);
   cursor: pointer;
   transition: background 0.2s;
   position: relative;
 }
 .notification-item:hover {
-  background: #f0f0f0;
+  background: var(--bg-surface);
 }
 .notification-item.unread {
-  background: #eef2ff;
+  background: var(--primary-color-light);
 }
 .notif-header {
   display: flex;
   justify-content: space-between;
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin-bottom: 0.25rem;
 }
 .notif-sender {
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
 }
 .notif-message {
   margin: 0;
   font-size: 0.95rem;
-  color: #111827;
+  color: var(--text-primary);
 }
 .unread-dot {
   position: absolute;
   top: 10px;
   right: 10px;
-  color: #2563eb;
+  color: var(--primary-color);
   font-size: 0.8rem;
 }
 .no-notifications {
-  color: #6b7280;
+  color: var(--text-secondary);
   text-align: center;
   font-style: italic;
 }
@@ -119,7 +118,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-4);
 }
 .section-title {
   margin: 0;
@@ -127,65 +126,18 @@
 .filter-dropdown-container {
   position: relative;
 }
-.filter-btn {
-  background: transparent;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 0.4rem 0.8rem;
-  font-size: 0.85rem;
-  color: #4b5563;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s;
-}
-.filter-btn:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
-}
-.filter-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 0.5rem;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  width: 120px;
-  z-index: 10;
-  overflow: hidden;
-}
-.filter-item {
-  padding: 0.6rem 1rem;
-  font-size: 0.9rem;
-  color: #374151;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.filter-item:hover {
-  background: #f9fafb;
-}
-/* ... existing code ... */
-.filter-item.active {
-  background: #f3f4f6;
-  font-weight: 500;
-  color: #111827;
-}
 
 /* Invitation Actions */
 .invite-actions {
   display: flex;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 .invite-btn {
   padding: 0.35rem 0.8rem;
   font-size: 0.85rem;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   border: 1px solid transparent;
   transition: all 0.2s;
@@ -193,28 +145,28 @@
 }
 
 .accept-btn {
-  background-color: #4f46e5; /* Indigo-600 */
+  background-color: var(--primary-color);
   color: white;
 }
 
 .accept-btn:hover {
-  background-color: #4338ca; /* Indigo-700 */
+  background-color: var(--primary-color-hover);
 }
 
 .reject-btn {
-  background-color: #f1f5f9; /* Slate-100 */
-  color: #475569; /* Slate-600 */
-  border-color: #e2e8f0;
+  background-color: var(--bg-surface-secondary);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
 }
 
 .reject-btn:hover {
-  background-color: #e2e8f0; /* Slate-200 */
-  color: #334155;
+  background-color: var(--border-color);
+  color: var(--text-primary);
 }
 
 .invite-status-msg {
   font-size: 0.9rem;
-  color: #4b5563; /* Gray-600 */
+  color: var(--text-secondary);
   font-style: italic;
   display: block;
 }

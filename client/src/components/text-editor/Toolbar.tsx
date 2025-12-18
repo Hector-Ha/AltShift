@@ -12,6 +12,8 @@ import { ColorPicker } from "./components/ColorPicker";
 import { insertImage, insertVideo } from "./plugins/withImages";
 import { insertLink } from "./plugins/withLinks";
 import { insertTable } from "./plugins/withTables";
+import { Sparkles } from "lucide-react";
+import AIToolbarPopup from "./components/AIToolbarPopup";
 
 const Button = React.forwardRef<
   HTMLSpanElement,
@@ -147,6 +149,8 @@ export const Toolbar = () => {
     }
   };
 
+  const [isAIOpen, setIsAIOpen] = React.useState(false);
+
   return (
     <div className="slate-toolbar">
       {/* History */}
@@ -175,6 +179,26 @@ export const Toolbar = () => {
         </Button>
       </span> 
       <span className="toolbar-separator"></span> */}
+
+      {/* AI Assistant */}
+      <span className="toolbar-group" style={{ position: "relative" }}>
+        <Button
+          active={isAIOpen}
+          reversed={false}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            setIsAIOpen(!isAIOpen);
+          }}
+          title="AI Assistant"
+          className={`toolbar-btn ${isAIOpen ? "active" : ""}`}
+          style={{ color: isAIOpen ? "var(--primary-color)" : "inherit" }}
+        >
+          <Sparkles size={18} />
+        </Button>
+        <AIToolbarPopup isOpen={isAIOpen} onClose={() => setIsAIOpen(false)} />
+      </span>
+
+      <span className="toolbar-separator"></span>
 
       {/* Formatting */}
       <span className="toolbar-group">

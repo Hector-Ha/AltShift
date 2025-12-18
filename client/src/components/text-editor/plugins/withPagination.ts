@@ -7,28 +7,28 @@ export const withPagination = (editor: Editor) => {
   editor.normalizeNode = (entry) => {
     const [node, path] = entry;
 
-    // Root level normalization
+    // Root normalization
     if (path.length === 0) {
       if (editor.children.length < 1) {
-        // Ensure at least one page exists
+        // Ensure page
         const page = createPageNode();
         Transforms.insertNodes(editor, page, { at: [0] });
         return;
       }
 
-      // Check for non-page children at root
+      // Check root children
       for (const [child, childPath] of Node.children(editor, path)) {
         if (!SlateElement.isElement(child) || child.type !== "page") {
-          // Wrap non-page nodes in a page
+          // Wrap in page
           Transforms.wrapNodes(editor, createPageNode([]), { at: childPath });
           return;
         }
       }
     }
 
-    // Page level normalization
+    // Page normalization
     if (SlateElement.isElement(node) && node.type === "page") {
-      // Ensure page is not empty (must have at least one child)
+      // Ensure page content
       if (node.children.length === 0) {
         Transforms.insertNodes(
           editor,

@@ -249,31 +249,7 @@ const parseInline = (text: string): SlateNode[] => {
       if (pre) linkNodes.push({ ...node, text: pre });
 
       const linkText = match[1];
-      let linkUrl = match[2];
-
-      // Sanitize protocols
-      const allowedProtocols = ["http:", "https:", "mailto:"];
-      try {
-        const url = new URL(linkUrl);
-        if (!allowedProtocols.includes(url.protocol)) {
-          // Check relative
-          if (linkUrl.startsWith("/") || linkUrl.startsWith("#")) {
-            // Safe
-          } else {
-            console.warn(`Sanitized blocked protocol: ${url.protocol}`);
-            linkUrl = "#"; // Blocked
-          }
-        }
-      } catch (e) {
-        // Invalid URL
-        if (
-          linkUrl.trim().toLowerCase().startsWith("javascript:") ||
-          linkUrl.trim().toLowerCase().startsWith("data:") ||
-          linkUrl.trim().toLowerCase().startsWith("vbscript:")
-        ) {
-          linkUrl = "#";
-        }
-      }
+      const linkUrl = match[2];
 
       linkNodes.push({
         type: "link",

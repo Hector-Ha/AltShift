@@ -3,7 +3,7 @@ import "../styles/NewLogin.css";
 import { useMutation } from "@apollo/client/react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { gql } from "../gql";
-import Logo from "../components/Logo";
+import LogoWhite from "../assets/logos/logo-white.svg";
 import type {
   ResetPasswordMutation,
   ResetPasswordMutationVariables,
@@ -68,9 +68,9 @@ const ResetPassword: React.FC = () => {
   return (
     <div className="login-page">
       <div className="login-brand-section">
-        <div className="brand-header">
-          <Logo />
-          <span>AltShift</span>
+        <div className="brand-header" style={{ gap: "6px" }}>
+          <img src={LogoWhite} alt="AltShift Logo" width={32} height={32} />
+          <span style={{ fontSize: "18px" }}>AltShift</span>
         </div>
       </div>
 
@@ -84,7 +84,7 @@ const ResetPassword: React.FC = () => {
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="form-group">
               <input
-                className="form-input"
+                className="input-field"
                 type="password"
                 placeholder="New Password"
                 value={newPassword}
@@ -95,7 +95,7 @@ const ResetPassword: React.FC = () => {
 
             <div className="form-group">
               <input
-                className="form-input"
+                className="input-field"
                 type="password"
                 placeholder="Confirm New Password"
                 value={confirmPassword}
@@ -104,7 +104,11 @@ const ResetPassword: React.FC = () => {
               />
             </div>
 
-            <button type="submit" className="submit-btn" disabled={loading}>
+            <button
+              type="submit"
+              className="btn btn-primary auth-submit-btn"
+              disabled={loading}
+            >
               {loading ? "Resetting..." : "Reset Password"}
             </button>
           </form>

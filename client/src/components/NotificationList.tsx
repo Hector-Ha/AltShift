@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { gql } from "../gql";
 import { formatDistanceToNow } from "date-fns";
+import { Filter } from "lucide-react";
 import "../styles/dashboard.css";
 import "../styles/NotificationList.css";
+import Dropdown from "./Dropdown";
 import { socket } from "../socket/socket";
 import type {
   MyNotificationsQuery,
@@ -198,58 +200,47 @@ const NotificationList: React.FC = () => {
         <div className="section-header">
           <h3 className="section-title">New Updates</h3>
           <div className="filter-dropdown-container">
-            <button
-              className="filter-btn"
-              onClick={() => setShowFilter(!showFilter)}
+            <Dropdown
+              isOpen={showFilter}
+              onOpenChange={setShowFilter}
+              align="right"
+              trigger={
+                <button className="filter-btn">
+                  Filter
+                  <Filter size={16} />
+                </button>
+              }
             >
-              Filter
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <button
+                className={`dropdown-item ${filter === "all" ? "active" : ""}`}
+                onClick={() => {
+                  setFilter("all");
+                  setShowFilter(false);
+                }}
               >
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-              </svg>
-            </button>
-            {showFilter && (
-              <div className="filter-menu">
-                <div
-                  className={`filter-item ${filter === "all" ? "active" : ""}`}
-                  onClick={() => {
-                    setFilter("all");
-                    setShowFilter(false);
-                  }}
-                >
-                  All
-                </div>
-                <div
-                  className={`filter-item ${
-                    filter === "unread" ? "active" : ""
-                  }`}
-                  onClick={() => {
-                    setFilter("unread");
-                    setShowFilter(false);
-                  }}
-                >
-                  Unread
-                </div>
-                <div
-                  className={`filter-item ${filter === "read" ? "active" : ""}`}
-                  onClick={() => {
-                    setFilter("read");
-                    setShowFilter(false);
-                  }}
-                >
-                  Read
-                </div>
-              </div>
-            )}
+                All
+              </button>
+              <button
+                className={`dropdown-item ${
+                  filter === "unread" ? "active" : ""
+                }`}
+                onClick={() => {
+                  setFilter("unread");
+                  setShowFilter(false);
+                }}
+              >
+                Unread
+              </button>
+              <button
+                className={`dropdown-item ${filter === "read" ? "active" : ""}`}
+                onClick={() => {
+                  setFilter("read");
+                  setShowFilter(false);
+                }}
+              >
+                Read
+              </button>
+            </Dropdown>
           </div>
         </div>
 
@@ -309,7 +300,7 @@ const NotificationList: React.FC = () => {
       <div className="active-panel">
         {Object.keys(groupedSessions).length > 0 ? (
           <div className="active-sessions-content">
-            <h4>Active Now</h4>
+            <h3 style={{ marginBottom: "16px" }}>Active Now</h3>
             {Object.entries(groupedSessions).map(
               ([docId, data]: [string, any]) => {
                 const users = data.users;
