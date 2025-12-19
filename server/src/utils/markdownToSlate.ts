@@ -1,5 +1,3 @@
-import { Node } from "slate";
-
 interface SlateElement {
   type: string;
   children: SlateNode[];
@@ -13,7 +11,7 @@ interface SlateText {
 
 type SlateNode = SlateElement | SlateText;
 
-export const markdownToSlate = (markdown: string): Node[] => {
+export const markdownToSlate = (markdown: string): SlateNode[] => {
   const nodes: SlateNode[] = [];
   const lines = markdown.split("\n");
   let i = 0;
@@ -166,12 +164,10 @@ export const markdownToSlate = (markdown: string): Node[] => {
 
   // Ensure content
   if (nodes.length === 0) {
-    return [
-      { type: "paragraph", children: [{ text: "" }] },
-    ] as unknown as Node[];
+    return [{ type: "paragraph", children: [{ text: "" }] }] as SlateNode[];
   }
 
-  return nodes as unknown as Node[];
+  return nodes;
 };
 
 // Inline Parsing
