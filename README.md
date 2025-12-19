@@ -66,7 +66,7 @@ AltShift is a real-time collaborative document editor built with modern web tech
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -139,7 +139,7 @@ AltShift is a real-time collaborative document editor built with modern web tech
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 ### Frontend
 
@@ -201,7 +201,7 @@ altshift/
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 ### Database Schema
 
