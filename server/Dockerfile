@@ -20,6 +20,9 @@ FROM node:22-alpine
 
 WORKDIR /app
 
+# Set production environment default
+ENV NODE_ENV=production
+
 # Copy package files for production install
 COPY package*.json ./
 

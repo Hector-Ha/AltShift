@@ -33,6 +33,7 @@ const httpServer = http.createServer(app);
 const apolloServer = new ApolloServer({
   typeDefs: schema,
   resolvers,
+  introspection: process.env.NODE_ENV !== "production",
 });
 
 // SOCKET.IO SETUP
