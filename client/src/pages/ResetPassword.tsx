@@ -3,6 +3,7 @@ import "../styles/NewLogin.css";
 import { useMutation } from "@apollo/client/react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { gql } from "../gql";
+import Alert from "../components/Alert";
 import LogoWhite from "../assets/logos/logo-white.svg";
 import type {
   ResetPasswordMutation,
@@ -114,9 +115,9 @@ const ResetPassword: React.FC = () => {
           </form>
 
           {error && (
-            <div className="error-message">
-              <p>Error: {error.message}</p>
-            </div>
+            <Alert type="error" title="Error">
+              {error.message}
+            </Alert>
           )}
         </div>
       </div>

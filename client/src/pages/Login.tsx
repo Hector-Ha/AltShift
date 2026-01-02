@@ -3,6 +3,8 @@ import "../styles/NewLogin.css";
 import { useMutation } from "@apollo/client/react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { gql } from "../gql";
+import { HelpCircle } from "lucide-react";
+import Alert from "../components/Alert";
 import LogoWhite from "../assets/logos/logo-white.svg";
 import LoginBg from "../assets/images/AltShift Login.jpg";
 import type { LoginMutation, LoginMutationVariables } from "../gql/graphql";
@@ -87,17 +89,9 @@ const Login: React.FC = () => {
           </div>
 
           {authError && (
-            <div
-              className="error-message"
-              style={{
-                marginBottom: "20px",
-                backgroundColor: "rgba(239, 68, 68, 0.1)",
-                border: "1px solid var(--error)",
-                color: "var(--error)",
-              }}
-            >
-              <p>{authError}</p>
-            </div>
+            <Alert type="error" title="Authentication Error">
+              {authError}
+            </Alert>
           )}
 
           <form onSubmit={handleSubmit} className="auth-form">
@@ -139,9 +133,12 @@ const Login: React.FC = () => {
           </form>
 
           {error && (
-            <div className="error-message">
-              <p>Login Error: {error.message}</p>
-            </div>
+            <Alert type="error" title="Login Failed">
+              {error.message === "No User Found" ||
+              error.message.includes("Invalid Password")
+                ? "Invalid email or password"
+                : error.message}
+            </Alert>
           )}
 
           <div className="auth-footer">
@@ -149,6 +146,108 @@ const Login: React.FC = () => {
             <Link to="/signup" className="switch-auth-btn-link">
               Sign Up
             </Link>
+          </div>
+        </div>
+      </div>
+      {/* Hint Button */}
+      <div
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          zIndex: 1000,
+        }}
+      >
+        <button
+          className="btn"
+          style={{
+            backgroundColor: "white",
+            border: "1px solid #e5e7eb",
+            color: "#111827",
+            padding: "8px 16px",
+            borderRadius: "6px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "14px",
+            fontWeight: "500",
+            boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            const hints = document.getElementById("login-hints");
+            if (hints) {
+              hints.style.display =
+                hints.style.display === "none" ? "block" : "none";
+            }
+          }}
+        >
+          <HelpCircle size={16} />
+          <span>Demo Credentials</span>
+        </button>
+        <div
+          id="login-hints"
+          style={{
+            display: "none",
+            position: "absolute",
+            top: "100%",
+            right: "0",
+            marginTop: "10px",
+            backgroundColor: "white",
+            padding: "16px",
+            borderRadius: "8px",
+            boxShadow:
+              "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+            width: "280px",
+            color: "#333",
+          }}
+        >
+          <h4
+            style={{
+              margin: "0 0 12px 0",
+              fontSize: "14px",
+              fontWeight: "600",
+              color: "#111",
+            }}
+          >
+            Demo Credentials
+          </h4>
+          <div style={{ marginBottom: "12px", fontSize: "13px" }}>
+            <div
+              style={{ marginBottom: "4px", fontWeight: "500", color: "#666" }}
+            >
+              User A
+            </div>
+            <div
+              style={{
+                background: "#f3f4f6",
+                padding: "8px",
+                borderRadius: "4px",
+                fontFamily: "monospace",
+              }}
+            >
+              <div>Email: demo@example.com</div>
+              <div>Pass: password123</div>
+            </div>
+          </div>
+          <div style={{ fontSize: "13px" }}>
+            <div
+              style={{ marginBottom: "4px", fontWeight: "500", color: "#666" }}
+            >
+              User B
+            </div>
+            <div
+              style={{
+                background: "#f3f4f6",
+                padding: "8px",
+                borderRadius: "4px",
+                fontFamily: "monospace",
+              }}
+            >
+              <div>Email: test@example.com</div>
+              <div>Pass: password123</div>
+            </div>
           </div>
         </div>
       </div>

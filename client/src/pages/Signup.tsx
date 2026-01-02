@@ -5,6 +5,7 @@ import PasswordChecklist from "../components/PasswordChecklist";
 import { useMutation } from "@apollo/client/react";
 import { useNavigate, Link } from "react-router-dom";
 import { gql } from "../gql";
+import Alert from "../components/Alert";
 import LogoWhite from "../assets/logos/logo-white.svg";
 import LoginBg from "../assets/images/AltShift Login.jpg";
 import type {
@@ -199,15 +200,15 @@ const Signup: React.FC = () => {
           </form>
 
           {validationError && (
-            <div className="error-message">
-              <p>{validationError}</p>
-            </div>
+            <Alert type="error" title="Validation Error">
+              {validationError}
+            </Alert>
           )}
 
           {error && (
-            <div className="error-message">
-              <p>Register Error: {error.message}</p>
-            </div>
+            <Alert type="error" title="Registration Failed">
+              {error.message}
+            </Alert>
           )}
 
           <div className="auth-footer">
