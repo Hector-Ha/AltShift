@@ -227,8 +227,8 @@ const Login: React.FC = () => {
                 fontFamily: "monospace",
               }}
             >
-              <div>Email: demo@example.com</div>
-              <div>Pass: password123</div>
+              <div>Email: demo@altshift.com</div>
+              <div>Pass: Password123!</div>
             </div>
           </div>
           <div style={{ fontSize: "13px" }}>
@@ -245,8 +245,8 @@ const Login: React.FC = () => {
                 fontFamily: "monospace",
               }}
             >
-              <div>Email: test@example.com</div>
-              <div>Pass: password123</div>
+              <div>Email: test@altshift.com</div>
+              <div>Pass: Password123!</div>
             </div>
           </div>
         </div>
