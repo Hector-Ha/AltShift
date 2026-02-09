@@ -45,7 +45,7 @@ const io = new Server<
 >(httpServer, {
   cors: {
     origin: [
-      "https://altshift.vercel.app",
+      process.env.CLIENT_URL || "http://localhost:5173",
       "http://localhost:5173",
       "http://localhost:4173",
       /\.vercel\.app$/,
@@ -81,7 +81,7 @@ const startServer = async () => {
       "/graphql",
       cors({
         origin: [
-          "https://altshift.vercel.app", // Your Production Vercel URL
+          process.env.CLIENT_URL || "http://localhost:5173", // Production client URL from env
           "http://localhost:5173", // Local Development
           "http://localhost:4173", // Local Preview
           /\.vercel\.app$/, // Allow all Vercel Preview Deployments
@@ -89,7 +89,7 @@ const startServer = async () => {
         credentials: true,
       }),
       express.json(),
-      expressMiddleware(apolloServer, { context: apolloContext })
+      expressMiddleware(apolloServer, { context: apolloContext }),
     );
 
     io.use(authMiddleware);
